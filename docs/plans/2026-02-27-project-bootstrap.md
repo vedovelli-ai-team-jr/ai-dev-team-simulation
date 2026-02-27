@@ -13,6 +13,7 @@
 ## Task 1: Git init + pnpm init
 
 **Files:**
+
 - Create: `.gitignore`
 
 **Step 1: Init git repo**
@@ -58,6 +59,7 @@ git commit -m "chore: init repo"
 ## Task 2: Vite + React + TypeScript scaffold
 
 **Files:**
+
 - Create: `index.html`
 - Create: `vite.config.ts`
 - Create: `tsconfig.json`
@@ -199,6 +201,7 @@ git commit -m "feat: vite + react + typescript scaffold"
 ## Task 3: Tailwind CSS 4
 
 **Files:**
+
 - Create: `src/index.css`
 - Modify: `src/main.tsx` (add CSS import)
 - Modify: `vite.config.ts` (add Tailwind plugin)
@@ -227,7 +230,7 @@ export default defineConfig({
 **Step 3: Create `src/index.css`**
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 ```
 
 **Step 4: Import CSS in `src/main.tsx`**
@@ -258,6 +261,7 @@ git commit -m "feat: tailwind css 4"
 ## Task 4: TanStack Router
 
 **Files:**
+
 - Create: `src/routes/__root.tsx`
 - Create: `src/routes/index.tsx`
 - Create: `src/routeTree.gen.ts` (auto-generated — commit after first gen)
@@ -365,6 +369,7 @@ git commit -m "feat: tanstack router with file-based routing"
 ## Task 5: TanStack Query
 
 **Files:**
+
 - Modify: `src/main.tsx`
 
 **Step 1: Install TanStack Query**
@@ -471,6 +476,7 @@ git commit -m "feat: tanstack table, form, virtual installed"
 ## Task 7: MSW (Mock Service Worker)
 
 **Files:**
+
 - Create: `src/mocks/handlers.ts`
 - Create: `src/mocks/browser.ts`
 - Create: `public/mockServiceWorker.js` (generated)
@@ -535,9 +541,13 @@ Wrap the existing `ReactDOM.createRoot` call inside the `.then()` callback.
 Run `pnpm dev`, open browser console. Expected: `[MSW] Mocking enabled.`
 
 Also run in browser console:
+
 ```javascript
-fetch('/api/health').then(r => r.json()).then(console.log)
+fetch('/api/health')
+  .then((r) => r.json())
+  .then(console.log)
 ```
+
 Expected: `{ status: 'ok' }`
 
 **Step 7: Commit**
@@ -552,6 +562,7 @@ git commit -m "feat: msw mock service worker setup"
 ## Task 8: ESLint + Prettier
 
 **Files:**
+
 - Create: `eslint.config.ts`
 - Create: `.prettierrc`
 - Create: `.prettierignore`
@@ -645,6 +656,7 @@ git commit -m "chore: eslint flat config + prettier"
 ## Task 9: GitHub Issue Templates
 
 **Files:**
+
 - Create: `.github/ISSUE_TEMPLATE/bug_report.md`
 - Create: `.github/ISSUE_TEMPLATE/feature_request.md`
 - Create: `.github/ISSUE_TEMPLATE/task.md`
@@ -659,23 +671,29 @@ labels: bug
 ---
 
 ## Describe the Bug
+
 <!-- Clear description of what is wrong -->
 
 ## Steps to Reproduce
+
 1. Go to '...'
 2. Click on '...'
 3. See error
 
 ## Expected Behavior
+
 <!-- What should happen -->
 
 ## Actual Behavior
+
 <!-- What actually happens -->
 
 ## Screenshots / Logs
+
 <!-- Attach if applicable -->
 
 ## Environment
+
 - OS:
 - Browser:
 - App version:
@@ -691,18 +709,23 @@ labels: enhancement
 ---
 
 ## Summary
+
 <!-- One sentence: what and why -->
 
 ## Motivation
+
 <!-- What problem does this solve? -->
 
 ## Proposed Solution
+
 <!-- How should it work? -->
 
 ## Alternatives Considered
+
 <!-- Other approaches you've thought of -->
 
 ## Acceptance Criteria
+
 - [ ] ...
 - [ ] ...
 ```
@@ -717,12 +740,15 @@ labels: task
 ---
 
 ## What needs to be done
+
 <!-- Describe the work -->
 
 ## Why
+
 <!-- Context / business reason -->
 
 ## Definition of Done
+
 - [ ] ...
 - [ ] ...
 ```
@@ -739,34 +765,38 @@ git commit -m "chore: github issue templates"
 ## Task 10: CLAUDE.md — Project Conventions
 
 **Files:**
+
 - Create: `CLAUDE.md`
 
 **Step 1: Create `CLAUDE.md`**
 
-```markdown
+````markdown
 # AI Dev Team Simulation — Claude Code Conventions
 
 ## Project Overview
+
 A React SPA that simulates an AI-powered development team workflow. Built with Vite + React 19 + TypeScript.
 
 ## Tech Stack
-| Layer | Library |
-|---|---|
-| Build | Vite 6 + @vitejs/plugin-react-swc |
-| UI | React 19 |
-| Language | TypeScript 5 (strict) |
-| Routing | TanStack Router (file-based, `src/routes/`) |
-| Server State | TanStack Query |
-| Tables | TanStack Table |
-| Forms | TanStack Form |
-| Virtualisation | TanStack Virtual |
-| Styling | Tailwind CSS 4 |
-| API Mocking | MSW 2 |
-| Linting | ESLint 9 flat config (`eslint.config.ts`) |
-| Formatting | Prettier 3 (`.prettierrc`) |
-| Package Manager | pnpm |
+
+| Layer           | Library                                     |
+| --------------- | ------------------------------------------- |
+| Build           | Vite 6 + @vitejs/plugin-react-swc           |
+| UI              | React 19                                    |
+| Language        | TypeScript 5 (strict)                       |
+| Routing         | TanStack Router (file-based, `src/routes/`) |
+| Server State    | TanStack Query                              |
+| Tables          | TanStack Table                              |
+| Forms           | TanStack Form                               |
+| Virtualisation  | TanStack Virtual                            |
+| Styling         | Tailwind CSS 4                              |
+| API Mocking     | MSW 2                                       |
+| Linting         | ESLint 9 flat config (`eslint.config.ts`)   |
+| Formatting      | Prettier 3 (`.prettierrc`)                  |
+| Package Manager | pnpm                                        |
 
 ## Key Commands
+
 ```bash
 pnpm dev          # dev server (MSW enabled automatically)
 pnpm build        # tsc -b && vite build
@@ -775,8 +805,10 @@ pnpm lint         # eslint with zero warnings
 pnpm format       # prettier --write .
 pnpm format:check # check formatting without writing
 ```
+````
 
 ## File Conventions
+
 - **Routes:** `src/routes/<name>.tsx` — TanStack Router auto-generates `src/routeTree.gen.ts` (do not edit)
 - **API handlers:** `src/mocks/handlers.ts` — add MSW handlers here
 - **Components:** `src/components/<FeatureName>/<ComponentName>.tsx`
@@ -784,50 +816,57 @@ pnpm format:check # check formatting without writing
 - **Types:** `src/types/<domain>.ts`
 
 ## Code Style
+
 - No semicolons, single quotes, 100 char line width (Prettier enforces)
 - TypeScript strict mode — no `any`, no unused vars
 - Named exports only (no default exports except route files)
 - Co-locate tests with source: `src/components/Foo/Foo.test.tsx`
 
 ## MSW Usage
+
 - Handlers live in `src/mocks/handlers.ts`
 - MSW only starts in `import.meta.env.DEV`
 - Use `http.get/post/put/delete` from `msw`, return `HttpResponse.json()`
 
 ## TanStack Router
+
 - File-based routing: new page = new file in `src/routes/`
 - Root layout: `src/routes/__root.tsx`
 - Access QueryClient via router context: `const { queryClient } = Route.useRouteContext()`
 - `routeTree.gen.ts` is auto-generated — never edit manually
 
 ## Git Conventions
+
 - Branch naming: `feat/<slug>`, `fix/<slug>`, `chore/<slug>`
 - Commit format: `feat: ...`, `fix: ...`, `chore: ...`, `docs: ...`
 - PRs must pass lint + type check before merge
-```
+
+````
 
 **Step 2: Commit**
 
 ```bash
 git add CLAUDE.md
 git commit -m "docs: claude.md project conventions"
-```
+````
 
 ---
 
 ## Task 11: README.md
 
 **Files:**
+
 - Create: `README.md`
 
 **Step 1: Create `README.md`**
 
-```markdown
+````markdown
 # AI Dev Team Simulation
 
 A web application that simulates a collaborative AI-powered software development team. Visualise agent roles, task queues, sprint boards, and real-time code generation workflows — all in the browser, with a fully mocked backend.
 
 ## Features (planned)
+
 - **Agent Dashboard** — see each AI agent's current role, status, and output
 - **Task Board** — kanban view of issues assigned to agents (TanStack Table + Virtual)
 - **Sprint Planner** — create and assign tasks via TanStack Form
@@ -835,30 +874,35 @@ A web application that simulates a collaborative AI-powered software development
 - **Mock API** — all data served via MSW; no backend required
 
 ## Tech Stack
-| Layer | Technology |
-|---|---|
-| Framework | React 19 + Vite 6 |
-| Language | TypeScript 5 |
-| Routing | TanStack Router |
-| Data Fetching | TanStack Query |
-| Tables | TanStack Table |
-| Forms | TanStack Form |
-| Virtualisation | TanStack Virtual |
-| Styling | Tailwind CSS 4 |
-| Mocking | MSW 2 |
+
+| Layer          | Technology        |
+| -------------- | ----------------- |
+| Framework      | React 19 + Vite 6 |
+| Language       | TypeScript 5      |
+| Routing        | TanStack Router   |
+| Data Fetching  | TanStack Query    |
+| Tables         | TanStack Table    |
+| Forms          | TanStack Form     |
+| Virtualisation | TanStack Virtual  |
+| Styling        | Tailwind CSS 4    |
+| Mocking        | MSW 2             |
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js ≥ 20
 - pnpm ≥ 9
 
 ### Install
+
 ```bash
 pnpm install
 ```
+````
 
 ### Dev
+
 ```bash
 pnpm dev
 ```
@@ -866,18 +910,21 @@ pnpm dev
 Open [http://localhost:5173](http://localhost:5173). The mock API starts automatically via MSW.
 
 ### Build
+
 ```bash
 pnpm build
 pnpm preview
 ```
 
 ### Lint & Format
+
 ```bash
 pnpm lint
 pnpm format
 ```
 
 ## Project Structure
+
 ```
 src/
 ├── routes/          # TanStack Router pages (file-based)
@@ -888,16 +935,18 @@ src/
 ```
 
 ## Contributing
+
 See [CLAUDE.md](./CLAUDE.md) for code conventions.
 Use GitHub Issues (bug / feature / task templates in `.github/ISSUE_TEMPLATE/`).
-```
+
+````
 
 **Step 2: Commit**
 
 ```bash
 git add README.md
 git commit -m "docs: readme with app description and setup guide"
-```
+````
 
 ---
 
@@ -942,6 +991,7 @@ pnpm dev
 
 Open browser → `http://localhost:5173`.
 Confirm:
+
 - Page renders "AI Dev Team Simulation"
 - Browser console shows `[MSW] Mocking enabled.`
 - TanStack Router devtools panel visible
