@@ -29,14 +29,20 @@ function getRoleBgColor(role: string): string {
 
 export function AgentCard({ agent }: AgentCardProps) {
   return (
-    <div className={`p-6 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 ${getRoleBgColor(agent.role)}`}>
+    <article
+      className={`p-5 sm:p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all duration-200 ${getRoleBgColor(agent.role)} group`}
+    >
       {/* Header with name and status */}
-      <div className="flex items-start justify-between gap-4 mb-4">
-        <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-bold text-slate-900 truncate">{agent.name}</h3>
-          <p className="text-sm text-slate-600 mt-1">{getRoleLabel(agent.role)}</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
+        <div className="flex-1 min-w-0 mb-3 sm:mb-0">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate group-hover:text-slate-700 transition-colors">
+            {agent.name}
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">{getRoleLabel(agent.role)}</p>
         </div>
-        <StatusBadge status={agent.status} />
+        <div className="flex-shrink-0">
+          <StatusBadge status={agent.status} />
+        </div>
       </div>
 
       {/* Divider */}
@@ -46,7 +52,7 @@ export function AgentCard({ agent }: AgentCardProps) {
       {agent.currentTask && (
         <div className="mb-4">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-            Current Activity
+            Activity
           </p>
           <p className="text-sm text-slate-700 line-clamp-2">{agent.currentTask}</p>
         </div>
@@ -63,10 +69,10 @@ export function AgentCard({ agent }: AgentCardProps) {
       )}
 
       {/* Footer with metadata */}
-      <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-200">
-        <p>ID: {agent.id.substring(0, 8)}...</p>
-        <p>{new Date(agent.lastUpdated).toLocaleTimeString()}</p>
+      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between text-xs text-slate-500 pt-3 border-t border-slate-200 gap-2">
+        <p className="truncate">ID: {agent.id.substring(0, 8)}...</p>
+        <p className="flex-shrink-0">{new Date(agent.lastUpdated).toLocaleTimeString()}</p>
       </div>
-    </div>
+    </article>
   )
 }
