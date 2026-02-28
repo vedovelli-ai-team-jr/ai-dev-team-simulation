@@ -1,121 +1,65 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
-import { useTeams } from '../hooks/useTeams'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import type { Team } from '../hooks/useCreateTeam'
 
 export const Route = createFileRoute('/teams')({
   component: TeamsPage,
 })
 
 function TeamsPage() {
-  const { data: teams, isLoading, error } = useTeams()
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>(
-    'all'
-  )
-
-  const filteredTeams = teams?.filter((team) => {
-    if (statusFilter === 'all') return true
-    return team.status === statusFilter
+  const router = useRouter()
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: async () => {
+      const response = await fetch('/api/teams')
+      return response.json() as Promise<Team[]>
+    },
   })
-
-  if (isLoading) {
-    return (
-      <main className="min-h-screen bg-slate-900 text-white p-8">
-        <h1 className="text-3xl font-bold mb-8">Teams</h1>
-        <div className="text-slate-400">Loading...</div>
-      </main>
-    )
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-slate-900 text-white p-8">
-        <h1 className="text-3xl font-bold mb-8">Teams</h1>
-        <div className="text-red-400">Error loading teams</div>
-      </main>
-    )
-  }
 
   return (
     <main className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">Teams</h1>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Teams</h1>
+          <button
+            onClick={() => router.navigate({ to: '/teams/new' })}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+          >
+            Create Team
+          </button>
+        </div>
 
-      <div className="max-w-6xl">
-        {/* Filtering Sidebar */}
-        <div className="mb-8 bg-slate-800 rounded-lg p-6 w-full sm:w-64">
-          <h2 className="text-lg font-semibold mb-4">Filters</h2>
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')
-              }
-              className="w-full px-3 py-2 bg-slate-700 text-white rounded-md border border-slate-600 focus:border-blue-500 focus:outline-none"
+        {teams.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-slate-400 text-lg mb-4">No teams yet</p>
+            <button
+              onClick={() => router.navigate({ to: '/teams/new' })}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
             >
-              <option value="all">All</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
+              Create your first team
+            </button>
           </div>
-        </div>
-
-        {/* Teams Table */}
-        <div className="bg-slate-800 rounded-lg overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-700 bg-slate-750">
-                <th className="px-6 py-3 text-left text-sm font-semibold text-slate-200">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-slate-200">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-slate-200">
-                  Members
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-slate-200">
-                  Created
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTeams && filteredTeams.length > 0 ? (
-                filteredTeams.map((team) => (
-                  <tr
-                    key={team.id}
-                    className="border-b border-slate-700 hover:bg-slate-700 transition-colors"
-                  >
-                    <td className="px-6 py-4 text-sm font-medium">{team.name}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                          team.status === 'active'
-                            ? 'bg-green-900 text-green-200'
-                            : 'bg-gray-700 text-gray-300'
-                        }`}
-                      >
-                        {team.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm">{team.members}</td>
-                    <td className="px-6 py-4 text-sm text-slate-400">
-                      {new Date(team.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-slate-400">
-                    No teams found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        ) : (
+          <div className="grid gap-4">
+            {teams.map((team) => (
+              <div
+                key={team.id}
+                className="bg-slate-800 p-6 rounded-lg border border-slate-700"
+              >
+                <h2 className="text-xl font-bold mb-2">{team.name}</h2>
+                <p className="text-slate-300 mb-4">{team.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-400">
+                    {team.memberCount} member{team.memberCount !== 1 ? 's' : ''}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {new Date(team.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   )
