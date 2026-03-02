@@ -1,3 +1,5 @@
+🚨 **Muito importante**: este projeto não tem a finalidade de ser um projeto real, algo que possa ser executado e acessado no browser. Ele serve única e exclusivamente para simular um ciclo de desenvolvimento de software com dois desenvolvedores e um orquestrador. Todos os sinais gerados como issues, comentários, pull requests, code reviews são enviados para um produto que está em desenvolvimento.
+
 # AI Dev Team Simulation
 
 A web application that simulates a collaborative AI-powered software development team. Visualise agent roles, task queues, sprint boards, and real-time code generation workflows — all in the browser, with a fully mocked backend.
