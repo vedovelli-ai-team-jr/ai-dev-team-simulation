@@ -12,6 +12,7 @@ interface FormFields {
   team: string
   sprint: string
   priority: TaskPriority
+  estimatedHours?: number
 }
 
 export const CreateTaskForm = () => {
@@ -27,6 +28,7 @@ export const CreateTaskForm = () => {
       team: '',
       sprint: 'sprint-1',
       priority: 'medium',
+      estimatedHours: undefined,
     },
     onSubmit: async ({ value }) => {
       try {
@@ -36,6 +38,7 @@ export const CreateTaskForm = () => {
           team: value.team,
           sprint: value.sprint,
           priority: value.priority,
+          estimatedHours: value.estimatedHours,
         }
 
         mutate(data, {
@@ -287,6 +290,52 @@ export const CreateTaskForm = () => {
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
                 </select>
+                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
+                  <p className="text-red-400 text-sm mt-1">
+                    {field.state.meta.errors[0]}
+                  </p>
+                )}
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field
+            name="estimatedHours"
+            validators={{
+              onBlur: ({ value }) => {
+                if (value !== undefined && value !== null) {
+                  if (typeof value !== 'number' || value < 0) {
+                    return 'Estimated hours must be a positive number'
+                  }
+                }
+                return undefined
+              },
+            }}
+          >
+            {(field) => (
+              <div>
+                <label
+                  htmlFor={field.name}
+                  className="block text-sm font-medium mb-2"
+                >
+                  Estimated Hours (Optional)
+                </label>
+                <input
+                  id={field.name}
+                  name={field.name}
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={field.state.value ?? ''}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => {
+                    const value = e.target.value ? parseFloat(e.target.value) : undefined
+                    field.setValue(value)
+                  }}
+                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg focus:outline-none focus:border-blue-500 text-white"
+                  placeholder="Enter estimated hours"
+                  disabled={isPending}
+                />
                 {field.state.meta.errors && field.state.meta.errors.length > 0 && (
                   <p className="text-red-400 text-sm mt-1">
                     {field.state.meta.errors[0]}
