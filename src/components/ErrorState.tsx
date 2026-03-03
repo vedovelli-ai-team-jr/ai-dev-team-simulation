@@ -1,7 +1,7 @@
 interface ErrorStateProps {
   title?: string
   message?: string
-  error?: Error | null
+  error?: Error
   onRetry?: () => void
 }
 

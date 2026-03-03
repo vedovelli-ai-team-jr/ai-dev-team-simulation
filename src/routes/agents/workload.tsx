@@ -106,13 +106,15 @@ function AgentWorkloadDashboard() {
   }
 
   if (error) {
+    const errorObject = error instanceof Error ? error : undefined
+
     return (
       <main className="min-h-screen bg-slate-900 text-white p-8">
         <h1 className="text-3xl font-bold mb-8">Agent Workload Dashboard</h1>
         <ErrorState
           title="Failed to Load Workload"
           message="Unable to fetch agent workload data"
-          error={error instanceof Error ? error : null}
+          error={errorObject}
         />
       </main>
     )
