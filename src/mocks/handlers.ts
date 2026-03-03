@@ -33,6 +33,14 @@ interface CreateTaskPayload {
   assignedAgent?: string | null
 }
 
+interface User {
+  id: string
+  name: string
+  email: string
+  role: string
+  createdAt: string
+}
+
 // Mock agents data with tasks (for workload dashboard)
 const mockAgents = [
   {
@@ -190,6 +198,9 @@ function getTaskIdCounter(): number {
 
 // In-memory store for sprints
 const sprintsStore: Sprint[] = []
+
+// In-memory store for users
+const usersStore: User[] = []
 
 // Generate mock activities for activity feed
 function generateMockActivities(): Activity[] {
@@ -1048,5 +1059,101 @@ export const handlers = [
       },
       { status: 200 }
     )
+  }),
+
+  // User creation
+  http.post('/api/users', async ({ request }) => {
+    const body = await request.json() as { name: string; email: string; role: string }
+
+    // Validate required fields
+    if (!body.name || !body.email || !body.role) {
+      return HttpResponse.json(
+        { message: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(body.email)) {
+      return HttpResponse.json(
+        { message: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+
+    // Validate role
+    if (!['admin', 'user', 'viewer'].includes(body.role)) {
+      return HttpResponse.json(
+        { message: 'Invalid role' },
+        { status: 400 }
+      )
+    }
+
+    // Check for duplicate email
+    if (usersStore.some((u) => u.email === body.email)) {
+      return HttpResponse.json(
+        { message: 'User with this email already exists' },
+        { status: 400 }
+      )
+    }
+
+    const newUser: User = {
+      id: `user-${Date.now()}`,
+      ...body,
+      createdAt: new Date().toISOString(),
+    }
+
+    usersStore.push(newUser)
+    return HttpResponse.json(newUser, { status: 201 })
+  }),
+
+  // User update
+  http.put('/api/users/:id', async ({ request, params }) => {
+    const { id } = params
+    const body = await request.json() as Partial<Omit<User, 'id' | 'createdAt'>>
+
+    const userIndex = usersStore.findIndex((u) => u.id === id)
+    if (userIndex === -1) {
+      return HttpResponse.json(
+        { message: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Validate email if provided
+    if (body.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(body.email)) {
+        return HttpResponse.json(
+          { message: 'Invalid email format' },
+          { status: 400 }
+        )
+      }
+
+      // Check for duplicate email (excluding current user)
+      if (usersStore.some((u) => u.email === body.email && u.id !== id)) {
+        return HttpResponse.json(
+          { message: 'User with this email already exists' },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Validate role if provided
+    if (body.role && !['admin', 'user', 'viewer'].includes(body.role)) {
+      return HttpResponse.json(
+        { message: 'Invalid role' },
+        { status: 400 }
+      )
+    }
+
+    const updatedUser: User = {
+      ...usersStore[userIndex],
+      ...body,
+    }
+
+    usersStore[userIndex] = updatedUser
+    return HttpResponse.json(updatedUser)
   }),
 ]
