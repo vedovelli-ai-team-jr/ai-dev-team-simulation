@@ -10,6 +10,9 @@ import {
   type SortingState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
+import { LoadingState } from '../../components/LoadingState'
+import { ErrorState } from '../../components/ErrorState'
+import { DataCard } from '../../components/DataCard'
 
 interface AgentWorkload {
   agentId: string
@@ -97,7 +100,7 @@ function AgentWorkloadDashboard() {
     return (
       <main className="min-h-screen bg-slate-900 text-white p-8">
         <h1 className="text-3xl font-bold mb-8">Agent Workload Dashboard</h1>
-        <div className="flex items-center justify-center h-64">Loading...</div>
+        <LoadingState title="Loading Workload Data" message="Fetching agent workload information..." />
       </main>
     )
   }
@@ -106,7 +109,11 @@ function AgentWorkloadDashboard() {
     return (
       <main className="min-h-screen bg-slate-900 text-white p-8">
         <h1 className="text-3xl font-bold mb-8">Agent Workload Dashboard</h1>
-        <div className="text-red-400">Error loading workload data</div>
+        <ErrorState
+          title="Failed to Load Workload"
+          message="Unable to fetch agent workload data"
+          error={error instanceof Error ? error : null}
+        />
       </main>
     )
   }
@@ -115,47 +122,49 @@ function AgentWorkloadDashboard() {
     <main className="min-h-screen bg-slate-900 text-white p-8">
       <h1 className="text-3xl font-bold mb-8">Agent Workload Dashboard</h1>
 
-      <div className="bg-slate-800 rounded-lg overflow-hidden shadow-lg">
-        <table className="w-full border-collapse">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-slate-700 border-b border-slate-600">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-6 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-slate-600"
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    <div className="flex items-center gap-2">
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.column.getIsSorted() && (
-                        <span className="text-xs">
-                          {header.column.getIsSorted() === 'desc' ? '▼' : '▲'}
-                        </span>
-                      )}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="border-b border-slate-700 hover:bg-slate-700 transition">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-6 py-4 text-sm">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataCard title="Agent Workload Summary">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className="bg-slate-700 border-b border-slate-600">
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="px-6 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-slate-600"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      <div className="flex items-center gap-2">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                        {header.column.getIsSorted() && (
+                          <span className="text-xs">
+                            {header.column.getIsSorted() === 'desc' ? '▼' : '▲'}
+                          </span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="border-b border-slate-700 hover:bg-slate-700 transition">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="px-6 py-4 text-sm">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="mt-4 text-sm text-slate-400">
-        Showing {data.length} agents
-      </div>
+        <div className="mt-4 text-sm text-slate-400">
+          Showing {data.length} agents
+        </div>
+      </DataCard>
     </main>
   )
 }
