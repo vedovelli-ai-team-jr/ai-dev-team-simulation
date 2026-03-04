@@ -1619,4 +1619,132 @@ export const paginatedHandlers = [
       hasNextPage: end < filteredItems.length,
     })
   }),
+
+  // Auth endpoints for form submission
+  http.post('/api/auth/login', async ({ request }) => {
+    const data = await request.json() as { email: string; password: string }
+
+    // Validate required fields
+    if (!data.email || !data.password) {
+      return HttpResponse.json(
+        { error: 'Email and password are required' },
+        { status: 400 }
+      )
+    }
+
+    // Mock successful login
+    if (data.email && data.password) {
+      return HttpResponse.json({
+        success: true,
+        user: {
+          id: 'user-123',
+          email: data.email,
+          name: 'John Doe',
+        },
+        token: 'mock-token-123',
+      })
+    }
+
+    return HttpResponse.json(
+      { error: 'Invalid credentials' },
+      { status: 401 }
+    )
+  }),
+
+  http.post('/api/auth/register', async ({ request }) => {
+    const data = await request.json() as Record<string, any>
+
+    // Validate required fields
+    const errors: Record<string, string> = {}
+
+    if (!data.firstName?.trim()) {
+      errors.firstName = 'First name is required'
+    }
+
+    if (!data.lastName?.trim()) {
+      errors.lastName = 'Last name is required'
+    }
+
+    if (!data.email?.trim()) {
+      errors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      errors.email = 'Invalid email address'
+    }
+
+    if (!data.username?.trim()) {
+      errors.username = 'Username is required'
+    } else if (data.username.length < 3) {
+      errors.username = 'Username must be at least 3 characters'
+    }
+
+    if (!data.password?.trim()) {
+      errors.password = 'Password is required'
+    } else if (data.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters'
+    }
+
+    if (data.password !== data.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match'
+    }
+
+    if (!data.agreeToTerms) {
+      errors.agreeToTerms = 'You must agree to terms'
+    }
+
+    // Return validation errors if any
+    if (Object.keys(errors).length > 0) {
+      return HttpResponse.json(
+        { success: false, errors },
+        { status: 400 }
+      )
+    }
+
+    // Mock successful registration
+    return HttpResponse.json({
+      success: true,
+      user: {
+        id: 'user-' + Date.now(),
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        username: data.username,
+      },
+    })
+  }),
+
+  http.post('/api/auth/check-email', async ({ request }) => {
+    const data = await request.json() as { email: string }
+
+    // Mock email availability check
+    // Simulate some emails as already taken
+    const takenEmails = [
+      'john@example.com',
+      'admin@example.com',
+      'test@example.com',
+    ]
+
+    const available = !takenEmails.includes(data.email?.toLowerCase() || '')
+
+    return HttpResponse.json({ available })
+  }),
+
+  http.post('/api/auth/check-username', async ({ request }) => {
+    const data = await request.json() as { username: string }
+
+    // Mock username availability check
+    // Simulate some usernames as already taken
+    const takenUsernames = [
+      'admin',
+      'user',
+      'test',
+      'john',
+      'john_doe',
+    ]
+
+    const available = !takenUsernames.includes(
+      data.username?.toLowerCase() || ''
+    )
+
+    return HttpResponse.json({ available })
+  }),
 ]
