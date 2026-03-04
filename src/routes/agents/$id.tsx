@@ -2,10 +2,27 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Suspense } from 'react'
 import { useAgentHistory } from '../../hooks/useAgentHistory'
 import { AgentIdParamSchema } from '../../lib/router-types'
+import { RouteErrorBoundary } from '../../components/RouteErrorBoundary'
+import { validateRouteParams } from '../../lib/routeGuards'
+
+// Route params validation
+interface AgentIdParams {
+  id: string
+}
+
+// Route loader - data pre-fetching could be implemented here
+async function loadAgentDetail() {
+  // Placeholder for data pre-fetching with React Query
+  return null
+}
 
 export const Route = createFileRoute('/agents/$id')({
   validateSearch: (search) => AgentIdParamSchema.parse(search),
   component: AgentDetailWrapper,
+  loader: loadAgentDetail,
+  errorComponent: ({ error }) => (
+    <RouteErrorBoundary error={error} />
+  ),
 })
 
 function AgentDetailWrapper() {
@@ -62,7 +79,8 @@ function AgentDetail() {
             ← Back to Agents
           </button>
           <div className="p-6 bg-red-900 border border-red-700 rounded-lg text-red-200">
-            Error: {error.message}
+            <h3 className="font-semibold mb-2">Failed to load agent details</h3>
+            <p>{error.message}</p>
           </div>
         </div>
       </div>
