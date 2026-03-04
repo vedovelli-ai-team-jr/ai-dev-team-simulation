@@ -1184,4 +1184,30 @@ export const handlers = [
     usersStore[userIndex] = updatedUser
     return HttpResponse.json(updatedUser)
   }),
+
+  // Form validation endpoints
+  http.post('/api/validate/email', async ({ request }) => {
+    const body = (await request.json()) as { email: string }
+
+    // Check if email already exists
+    const exists = usersStore.some((u) => u.email === body.email)
+
+    return HttpResponse.json({
+      available: !exists,
+      message: exists ? 'Email already in use' : undefined,
+    })
+  }),
+
+  http.post('/api/validate/username', async ({ request }) => {
+    const body = (await request.json()) as { username: string }
+
+    // Mock list of taken usernames
+    const takenUsernames = ['admin', 'root', 'test', 'demo']
+    const isTaken = takenUsernames.includes(body.username.toLowerCase())
+
+    return HttpResponse.json({
+      available: !isTaken,
+      message: isTaken ? 'Username already taken' : undefined,
+    })
+  }),
 ]
