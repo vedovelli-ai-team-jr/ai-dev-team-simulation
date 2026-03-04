@@ -3,10 +3,12 @@
  *
  * Provides reusable abstraction layers for form handling:
  * - React Hook Form: useFormField, useFormSubmit, useValidation, validationRules, ExampleForm
- * - TanStack Form: useLoginForm, useFilterForm, useCrudForm
+ * - TanStack Form: useForm (generic), useLoginForm, useFilterForm, useCrudForm
  *
  * React Hook Form is used for traditional form patterns with fine-grained control.
- * TanStack Form is used for more complex patterns like filter forms and CRUD operations.
+ * TanStack Form is used for more complex patterns like validation, async checks, and CRUD operations.
+ *
+ * Documentation: see docs/guides/VALIDATED_FORM_INFRASTRUCTURE.md
  *
  * @example
  * ```tsx
@@ -27,8 +29,8 @@
  *         form.handleSubmit()
  *       }}
  *     >
- *       {form.state.errors?.email && (
- *         <span>{form.state.errors.email}</span>
+ *       {form.state.fieldMeta('email')?.errors?.[0] && (
+ *         <span>{form.state.fieldMeta('email').errors[0]}</span>
  *       )}
  *       <input
  *         type="email"
@@ -51,6 +53,7 @@ export { useValidation, validationRules } from './useValidation'
 export { ExampleForm } from './ExampleForm'
 
 // TanStack Form exports
+export { useForm } from './useForm'
 export { useLoginForm } from './useLoginForm'
 export { useFilterForm } from './useFilterForm'
 export { useCrudForm } from './useCrudForm'
@@ -59,3 +62,4 @@ export type { UseFormSubmitReturn } from './useFormSubmit'
 export type { LoginFormData } from './useLoginForm'
 export type { FilterFormData } from './useFilterForm'
 export type { CrudFormMode } from './useCrudForm'
+export type { RegistrationFormData } from './examples/RegistrationFormExample'
