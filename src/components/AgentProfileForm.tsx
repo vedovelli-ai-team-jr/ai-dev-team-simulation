@@ -59,6 +59,10 @@ export const AgentProfileForm = ({
     if (!emailRegex.test(email)) {
       return 'Please enter a valid email address'
     }
+    // Additional validation: email should not be too long
+    if (email.length > 254) {
+      return 'Email address is too long'
+    }
     return undefined
   }
 
@@ -80,9 +84,21 @@ export const AgentProfileForm = ({
       return 'Start date is required'
     }
     const selectedDate = new Date(date)
-    if (selectedDate > new Date()) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    selectedDate.setHours(0, 0, 0, 0)
+
+    if (selectedDate > today) {
       return 'Start date cannot be in the future'
     }
+
+    // Check if date is too far in the past (more than 50 years)
+    const fiftyYearsAgo = new Date()
+    fiftyYearsAgo.setFullYear(fiftyYearsAgo.getFullYear() - 50)
+    if (selectedDate < fiftyYearsAgo) {
+      return 'Start date appears to be invalid (too far in the past)'
+    }
+
     return undefined
   }
 
@@ -295,8 +311,13 @@ export const AgentProfileForm = ({
           name="bio"
           validators={{
             onBlur: ({ value }) => {
-              if (value && value.length > 500) {
-                return 'Bio must not exceed 500 characters'
+              if (value && value.trim().length > 0) {
+                if (value.length > 500) {
+                  return 'Bio must not exceed 500 characters'
+                }
+                if (value.trim().length < 10) {
+                  return 'Bio must be at least 10 characters (if provided)'
+                }
               }
               return undefined
             },
@@ -338,8 +359,9 @@ export const AgentProfileForm = ({
           name="isActive"
           validators={{
             onBlur: ({ value }) => {
-              if (!value && form.getFieldValue('status') !== 'idle') {
-                return 'Cannot deactivate an agent that is not idle'
+              const status = form.getFieldValue('status')
+              if (!value && status !== 'idle') {
+                return `Cannot deactivate an agent with status "${status}". Change status to "Idle" first.`
               }
               return undefined
             },
