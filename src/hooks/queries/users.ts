@@ -17,6 +17,7 @@ export const userKeys = {
 
 /**
  * Fetch all users from the API.
+ * @deprecated Use useUsersQuery from './useUserQuery' instead
  * @returns Array of User objects with loading and error states
  */
 export function useUsers() {
@@ -37,6 +38,7 @@ export function useUsers() {
 
 /**
  * Fetch a single user by ID.
+ * @deprecated Use useUserQuery from './useUserQuery' instead
  * @param id - The user ID to fetch
  * @returns Single User object with loading and error states
  */
