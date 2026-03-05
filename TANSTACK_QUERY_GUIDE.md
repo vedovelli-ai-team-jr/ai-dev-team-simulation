@@ -473,6 +473,223 @@ const { mutate } = useUpdateMutation({
 })
 ```
 
+## Creating Custom Query Hooks
+
+### Pattern: List Data with Pagination
+
+The `useListItemsQuery` hook demonstrates the recommended pattern for paginated list queries.
+
+**Location**: `src/hooks/queries/useListItemsQuery.ts`
+
+```typescript
+// Basic usage
+const { items, isLoading, error, pagination, refetch } = useListItemsQuery({
+  page: 1,
+  pageSize: 10,
+})
+
+// Access pagination info
+const { currentPage, pageSize, total, totalPages } = pagination
+
+// Refetch on demand
+<button onClick={() => refetch()}>Refresh</button>
+```
+
+### Adding Items with Optimistic Updates
+
+The `useAddListItem` mutation provides instant feedback with automatic cache invalidation.
+
+```typescript
+const { mutate: addItem, isPending } = useAddListItem()
+
+const handleAdd = () => {
+  addItem(
+    { title: 'New Item', description: 'Description' },
+    {
+      onSuccess: () => {
+        // Item added successfully
+        console.log('Item added')
+      },
+      onError: (error) => {
+        // Handle error
+        console.error('Failed to add item:', error)
+      },
+    }
+  )
+}
+```
+
+### Removing Items with Optimistic Updates
+
+The `useRemoveListItem` mutation removes items with proper error handling and cache invalidation.
+
+```typescript
+const { mutate: removeItem, isPending } = useRemoveListItem()
+
+const handleDelete = (id: string) => {
+  removeItem(
+    { id },
+    {
+      onSuccess: () => {
+        console.log('Item deleted')
+      },
+    }
+  )
+}
+```
+
+### Building List Components
+
+The `ListView` component shows a complete implementation with:
+
+- **Data Fetching**: Uses `useListItemsQuery` for paginated data
+- **Item Management**: Integrates `useAddListItem` and `useRemoveListItem`
+- **User Feedback**: Loading states, error handling, empty states
+- **Pagination Controls**: Next/previous buttons with page info
+- **Form Handling**: Add item form with validation
+
+**Location**: `src/components/List/ListView.tsx`
+
+```typescript
+import { ListView } from '@/components/List/ListView'
+
+export function Page() {
+  return <ListView pageSize={10} />
+}
+```
+
+### Individual Item Display
+
+The `ListItem` component renders a single list item with delete action.
+
+**Location**: `src/components/List/ListItem.tsx`
+
+```typescript
+<ListItem
+  item={item}
+  onDelete={handleDelete}
+  isDeleting={false}
+/>
+```
+
+## Error Handling Patterns
+
+### Query Errors
+
+Handle errors from failed data fetches:
+
+```typescript
+const { data, error, refetch } = useListItemsQuery()
+
+if (error) {
+  return (
+    <div className="error-message">
+      <p>Error: {(error as Error).message}</p>
+      <button onClick={() => refetch()}>Retry</button>
+    </div>
+  )
+}
+```
+
+### Mutation Errors
+
+Handle errors from add/remove operations:
+
+```typescript
+const { mutate, error } = useAddListItem()
+
+const handleAdd = () => {
+  mutate(data, {
+    onError: (error) => {
+      console.error('Failed to add item:', (error as Error).message)
+      // Show error toast to user
+    },
+  })
+}
+```
+
+## Optimistic Update Strategies
+
+### List Mutations
+
+When adding or removing items, the cache is automatically invalidated:
+
+```typescript
+// Adding an item
+const { mutate: addItem } = useAddListItem()
+addItem(newItem) // Automatically refetches list after success
+
+// Removing an item
+const { mutate: removeItem } = useRemoveListItem()
+removeItem({ id }) // Automatically refetches list after success
+```
+
+### Manual Optimistic Updates
+
+For more control, use `useQueryClient` directly:
+
+```typescript
+const queryClient = useQueryClient()
+
+const { mutate } = useMutation({
+  mutationFn: updateItem,
+  onMutate: async (newItem) => {
+    // Cancel in-flight queries
+    await queryClient.cancelQueries({ queryKey: itemKeys.all })
+
+    // Snapshot previous data
+    const previous = queryClient.getQueryData(itemKeys.list())
+
+    // Optimistically update
+    queryClient.setQueryData(itemKeys.list(), (old) => ({
+      ...old,
+      data: old.data.map(item =>
+        item.id === newItem.id ? newItem : item
+      ),
+    }))
+
+    return { previous }
+  },
+  onError: (err, newItem, context) => {
+    // Rollback on error
+    queryClient.setQueryData(itemKeys.list(), context?.previous)
+  },
+})
+```
+
+## Cache Invalidation Best Practices
+
+### After Successful Mutations
+
+All mutations automatically invalidate relevant caches:
+
+```typescript
+// Adding invalidates all list queries
+useAddListItem() // triggers: queryClient.invalidateQueries({ queryKey: itemKeys.lists() })
+
+// Removing invalidates all list queries
+useRemoveListItem() // triggers: queryClient.invalidateQueries({ queryKey: itemKeys.lists() })
+```
+
+### Manual Invalidation
+
+For custom scenarios:
+
+```typescript
+const queryClient = useQueryClient()
+
+// Invalidate all item caches
+queryClient.invalidateQueries({ queryKey: itemKeys.all })
+
+// Invalidate only list queries
+queryClient.invalidateQueries({ queryKey: itemKeys.lists() })
+
+// Invalidate specific list with filters
+queryClient.invalidateQueries({
+  queryKey: itemKeys.list({ page: 1, pageSize: 10 })
+})
+```
+
 ## Resources
 
 - [TanStack Query Documentation](https://tanstack.com/query/latest)
