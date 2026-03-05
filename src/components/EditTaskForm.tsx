@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form'
 import { useRouter } from '@tanstack/react-router'
 import { useUpdateTask } from '../hooks/useUpdateTask'
 import { useToast } from './Toast'
+import { FormField } from './Form/FormField'
 import type { Task, UpdateTaskInput, TaskStatus, TaskPriority } from '../types/task'
 
 interface FormFields {
@@ -85,18 +86,15 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 if (!value || value.trim().length === 0) {
                   return 'Task title is required'
                 }
+                if (value.trim().length < 3) {
+                  return 'Task title must be at least 3 characters'
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Task Title
-                </label>
+              <FormField label="Task Title">
                 <input
                   id={field.name}
                   name={field.name}
@@ -107,12 +105,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   placeholder="Enter task title"
                   disabled={isPending}
                 />
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
@@ -128,13 +121,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Status
-                </label>
+              <FormField label="Status">
                 <select
                   id={field.name}
                   name={field.name}
@@ -149,12 +136,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   <option value="in-review">In Review</option>
                   <option value="done">Done</option>
                 </select>
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
@@ -165,18 +147,15 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 if (!value || value.trim().length === 0) {
                   return 'Team is required'
                 }
+                if (value.trim().length < 2) {
+                  return 'Team name must be at least 2 characters'
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Team
-                </label>
+              <FormField label="Team">
                 <input
                   id={field.name}
                   name={field.name}
@@ -187,12 +166,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   placeholder="Enter team name"
                   disabled={isPending}
                 />
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
@@ -203,18 +177,15 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 if (!value || value.trim().length === 0) {
                   return 'Sprint is required'
                 }
+                if (value.trim().length < 2) {
+                  return 'Sprint name must be at least 2 characters'
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Sprint
-                </label>
+              <FormField label="Sprint">
                 <input
                   id={field.name}
                   name={field.name}
@@ -225,12 +196,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   placeholder="Enter sprint name"
                   disabled={isPending}
                 />
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
@@ -246,13 +212,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Priority
-                </label>
+              <FormField label="Priority">
                 <select
                   id={field.name}
                   name={field.name}
@@ -266,12 +226,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
                 </select>
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
@@ -282,18 +237,15 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                 if (typeof value !== 'number' || value < 0) {
                   return 'Story points must be a positive number'
                 }
+                if (value > 100) {
+                  return 'Story points cannot exceed 100'
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Story Points
-                </label>
+              <FormField label="Story Points">
                 <input
                   id={field.name}
                   name={field.name}
@@ -306,12 +258,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   placeholder="Enter story points"
                   disabled={isPending}
                 />
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
@@ -323,19 +270,16 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   if (typeof value !== 'number' || value < 0) {
                     return 'Estimated hours must be a positive number'
                   }
+                  if (value > 1000) {
+                    return 'Estimated hours cannot exceed 1000 hours'
+                  }
                 }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className="block text-sm font-medium mb-2"
-                >
-                  Estimated Hours (Optional)
-                </label>
+              <FormField label="Estimated Hours (Optional)">
                 <input
                   id={field.name}
                   name={field.name}
@@ -352,12 +296,7 @@ export const EditTaskForm = ({ task }: EditTaskFormProps) => {
                   placeholder="Enter estimated hours"
                   disabled={isPending}
                 />
-                {field.state.meta.errors && field.state.meta.errors.length > 0 && (
-                  <p className="text-red-400 text-sm mt-1">
-                    {field.state.meta.errors[0]}
-                  </p>
-                )}
-              </div>
+              </FormField>
             )}
           </form.Field>
 
