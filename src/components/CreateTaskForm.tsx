@@ -135,7 +135,7 @@ export const CreateTaskForm = () => {
             }}
           >
             {(field) => (
-              <FormField label="Task Name" error={field.state.meta.errors?.[0]}>
+              <FormField label="Task Name">
                 <div className="relative">
                   <input
                     id={field.name}
@@ -169,7 +169,7 @@ export const CreateTaskForm = () => {
             }}
           >
             {(field) => (
-              <FormField label="Status" error={field.state.meta.errors?.[0]}>
+              <FormField label="Status">
                 <select
                   id={field.name}
                   name={field.name}
@@ -195,12 +195,15 @@ export const CreateTaskForm = () => {
                 if (!value || value.trim().length === 0) {
                   return 'Team is required'
                 }
+                if (value.trim().length < 2) {
+                  return 'Team name must be at least 2 characters'
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <FormField label="Team" error={field.state.meta.errors?.[0]}>
+              <FormField label="Team">
                 <input
                   id={field.name}
                   name={field.name}
@@ -222,12 +225,15 @@ export const CreateTaskForm = () => {
                 if (!value || value.trim().length === 0) {
                   return 'Sprint is required'
                 }
+                if (value.trim().length < 2) {
+                  return 'Sprint name must be at least 2 characters'
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <FormField label="Sprint" error={field.state.meta.errors?.[0]}>
+              <FormField label="Sprint">
                 <input
                   id={field.name}
                   name={field.name}
@@ -254,7 +260,7 @@ export const CreateTaskForm = () => {
             }}
           >
             {(field) => (
-              <FormField label="Priority" error={field.state.meta.errors?.[0]}>
+              <FormField label="Priority">
                 <select
                   id={field.name}
                   name={field.name}
@@ -280,13 +286,16 @@ export const CreateTaskForm = () => {
                   if (typeof value !== 'number' || value < 0) {
                     return 'Estimated hours must be a positive number'
                   }
+                  if (value > 1000) {
+                    return 'Estimated hours cannot exceed 1000 hours'
+                  }
                 }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <FormField label="Estimated Hours (Optional)" error={field.state.meta.errors?.[0]}>
+              <FormField label="Estimated Hours (Optional)">
                 <input
                   id={field.name}
                   name={field.name}
@@ -311,13 +320,18 @@ export const CreateTaskForm = () => {
             name="assignedAgent"
             validators={{
               onBlur: ({ value }) => {
-                // assignedAgent is optional
+                // assignedAgent is optional, but if provided must be valid
+                if (value && value.trim().length > 0) {
+                  if (value.trim().length < 2) {
+                    return 'Agent name or ID must be at least 2 characters'
+                  }
+                }
                 return undefined
               },
             }}
           >
             {(field) => (
-              <FormField label="Assign to Agent (Optional)" error={field.state.meta.errors?.[0]}>
+              <FormField label="Assign to Agent (Optional)">
                 <input
                   id={field.name}
                   name={field.name}
