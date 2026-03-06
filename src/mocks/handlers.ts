@@ -10,6 +10,7 @@ import type { SprintTask } from '../types/sprint'
 import { optimisticUpdateHandlers } from './optimisticUpdateHandlers'
 import { formSubmissionHandlers } from './formSubmissionHandlers'
 import { metricsHandlers } from './handlers/metrics'
+import { bulkOperationHandlers } from './handlers/bulk-operations'
 
 interface Team {
   id: string
@@ -2136,4 +2137,5 @@ export const paginatedHandlers = [
   }),
 
   ...metricsHandlers,
+  ...bulkOperationHandlers,
 ]
