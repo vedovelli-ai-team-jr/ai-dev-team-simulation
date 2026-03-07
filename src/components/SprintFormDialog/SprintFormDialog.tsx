@@ -340,7 +340,7 @@ export function SprintFormDialog({
               name="startDate"
               validators={{
                 onBlur: ({ value }) => {
-                  if (value && statusValue === 'active' && !value) {
+                  if (statusValue === 'active' && !value) {
                     return 'Start date is required for active sprints'
                   }
                   return undefined
@@ -387,7 +387,7 @@ export function SprintFormDialog({
               name="endDate"
               validators={{
                 onBlur: ({ value }) => {
-                  if (value && statusValue === 'active' && !value) {
+                  if (statusValue === 'active' && !value) {
                     return 'End date is required for active sprints'
                   }
                   return undefined

@@ -54,10 +54,24 @@ export const useUpdateSprint = (sprintId: string) => {
         queryKey: sprintKeys.lists(),
       })
 
-      // Create optimistic update
-      const optimisticSprint: Sprint = previousDetail
-        ? { ...previousDetail, ...data }
-        : {
+      // Create optimistic update - use list data if detail not cached
+      let optimisticSprint: Sprint
+      if (previousDetail) {
+        optimisticSprint = { ...previousDetail, ...data }
+      } else {
+        // Find sprint in list cache as fallback
+        let foundInList: Sprint | undefined
+        previousLists.forEach(([, listData]) => {
+          if (listData && !foundInList) {
+            foundInList = listData.find((s) => s.id === sprintId)
+          }
+        })
+
+        if (foundInList) {
+          optimisticSprint = { ...foundInList, ...data }
+        } else {
+          // Last resort: create minimal object (shouldn't happen in normal flow)
+          optimisticSprint = {
             id: sprintId,
             ...data,
             tasks: [],
@@ -65,6 +79,8 @@ export const useUpdateSprint = (sprintId: string) => {
             completedCount: 0,
             createdAt: new Date().toISOString(),
           }
+        }
+      }
 
       // Update detail cache
       queryClient.setQueryData(sprintKeys.detail(sprintId), optimisticSprint)
