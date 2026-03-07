@@ -87,23 +87,25 @@ export function SprintDashboard({ sprintId: initialSprintId, sprints = [] }: Spr
     )
   }
 
-  const { sprint, summary, burndownData, teamCapacity } = data
+  const { sprint, summary, agentWorkload } = data
 
-  // Mock burndown data if not provided
-  const mockBurndown: BurndownDataPoint[] = burndownData || [
-    { day: 1, plannedTasks: 20, completedTasks: 2 },
-    { day: 2, plannedTasks: 18, completedTasks: 5 },
-    { day: 3, plannedTasks: 15, completedTasks: 8 },
-    { day: 4, plannedTasks: 12, completedTasks: 11 },
-    { day: 5, plannedTasks: 10, completedTasks: 14 },
+  // Generate burndown data based on sprint progress
+  const mockBurndown: BurndownDataPoint[] = [
+    { day: 1, plannedTasks: summary.totalTasks, completedTasks: Math.round(summary.totalTasks * 0.1) },
+    { day: 2, plannedTasks: summary.totalTasks - 2, completedTasks: Math.round(summary.totalTasks * 0.25) },
+    { day: 3, plannedTasks: summary.totalTasks - 5, completedTasks: Math.round(summary.totalTasks * 0.4) },
+    { day: 4, plannedTasks: summary.totalTasks - 8, completedTasks: Math.round(summary.totalTasks * 0.65) },
+    { day: 5, plannedTasks: Math.max(summary.totalTasks - 12, summary.completedTasks), completedTasks: summary.completedTasks },
   ]
 
-  // Mock team capacity if not provided
-  const mockTeamCapacity: TeamMember[] = teamCapacity || [
-    { id: '1', name: 'Alice', assignedTasks: 4, completedTasks: 2, capacity: 5 },
-    { id: '2', name: 'Bob', assignedTasks: 3, completedTasks: 1, capacity: 5 },
-    { id: '3', name: 'Charlie', assignedTasks: 2, completedTasks: 1, capacity: 4 },
-  ]
+  // Convert agent workload to team capacity
+  const mockTeamCapacity: TeamMember[] = (agentWorkload || []).map((agent) => ({
+    id: agent.agent,
+    name: agent.agent,
+    assignedTasks: agent.taskCount,
+    completedTasks: agent.completedCount,
+    capacity: 5,
+  }))
 
   return (
     <div className="space-y-6">
@@ -171,7 +173,7 @@ export function SprintDashboard({ sprintId: initialSprintId, sprints = [] }: Spr
         totalTasks={summary.totalTasks}
         completedTasks={summary.completedTasks}
         inProgressTasks={summary.inProgressTasks}
-        blockedTasks={summary.blockedTasks || 0}
+        blockedTasks={summary.totalTasks - summary.completedTasks - summary.inProgressTasks - summary.remainingTasks}
         isLoading={isLoading}
       />
 
