@@ -113,7 +113,41 @@ function generateAgentAvailability(agentId: string): AgentAvailability {
   }
 }
 
+/**
+ * Pre-defined agent IDs for the mock dashboard
+ * Used for bulk status fetching and demo purposes
+ */
+const DEMO_AGENT_IDS = [
+  'agent-sr-dev',
+  'agent-junior',
+  'agent-pm',
+]
+
 export const agentStatusHandlers = [
+  /**
+   * GET /api/agents/status
+   * Fetch status for all agents (used by AgentStatusGrid)
+   */
+  http.get('/api/agents/status', () => {
+    // Simulate occasional network errors (5% chance)
+    if (Math.random() < 0.05) {
+      return HttpResponse.json(
+        { error: 'Internal server error' },
+        { status: 500 }
+      )
+    }
+
+    // Fetch status for all demo agents
+    const allStatuses = DEMO_AGENT_IDS.map((agentId) => generateAgentAvailability(agentId))
+
+    return HttpResponse.json(allStatuses, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
+
   /**
    * GET /api/agents/:id/status
    * Fetch current agent status and availability
