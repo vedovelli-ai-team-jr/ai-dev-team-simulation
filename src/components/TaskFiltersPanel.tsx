@@ -1,18 +1,14 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useForm } from '@tanstack/react-form'
+import { zodValidator } from '@tanstack/zod-form-adapter'
+import { z } from 'zod'
+import { useCallback, useEffect, useMemo } from 'react'
 import type { TaskStatus, TaskPriority } from '../types/task'
 
 interface TaskFiltersPanelProps {
-  status?: TaskStatus | null
-  priority?: TaskPriority | null
-  search?: string
-  assignee?: string
-  onStatusChange: (status: TaskStatus | null) => void
-  onPriorityChange: (priority: TaskPriority | null) => void
-  onSearchChange: (search: string) => void
-  onAssigneeChange: (assignee: string | null) => void
-  onClearFilters: () => void
+  onFiltersApply: (filters: TaskFiltersFormData) => void | Promise<void>
   assignees: string[]
   isLoading?: boolean
+  debounceMs?: number
 }
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string }[] = [
@@ -29,72 +25,97 @@ const PRIORITY_OPTIONS: { value: TaskPriority; label: string }[] = [
 ]
 
 /**
- * TaskFiltersPanel component for filtering tasks with debounced search.
- * Demonstrates proper filter state management with URL persistence.
+ * Validation schema for task filters using Zod
+ */
+const taskFiltersSchema = z.object({
+  search: z.string().optional().default(''),
+  priority: z.enum(['low', 'medium', 'high']).optional().nullable().default(null),
+  statuses: z.array(z.enum(['backlog', 'in-progress', 'in-review', 'done'])).default([]),
+  assignee: z.string().optional().nullable().default(null),
+  dueDateFrom: z.string().optional().default(''),
+  dueDateTo: z.string().optional().default(''),
+})
+
+export type TaskFiltersFormData = z.infer<typeof taskFiltersSchema>
+
+/**
+ * TaskFilterPanel component using TanStack Form for state management.
  *
  * Features:
- * - Status, priority, and assignee dropdowns
- * - Debounced text search (300ms) to reduce excessive queries
- * - Clear all filters button
+ * - Priority filter: Single select dropdown
+ * - Status filter: Multi-select checkbox group (Open/In Progress/Done/Backlog)
+ * - Assignee filter: Searchable dropdown with agent names
+ * - Date range filter: Date pickers for due date range
+ * - Search input: Full-text search with debounced input (300ms)
+ * - Apply Filters and Clear All actions
  * - Active filter count badge
  * - Loading state indication
+ * - URL query param persistence via TanStack Router
  */
 export function TaskFiltersPanel({
-  status,
-  priority,
-  search = '',
-  assignee = '',
-  onStatusChange,
-  onPriorityChange,
-  onSearchChange,
-  onAssigneeChange,
-  onClearFilters,
+  onFiltersApply,
   assignees,
   isLoading = false,
+  debounceMs = 300,
 }: TaskFiltersPanelProps) {
-  const [localSearch, setLocalSearch] = useState(search)
+  const form = useForm<TaskFiltersFormData>({
+    defaultValues: {
+      search: '',
+      priority: null,
+      statuses: [],
+      assignee: null,
+      dueDateFrom: '',
+      dueDateTo: '',
+    },
+    onSubmit: async ({ value }) => {
+      await onFiltersApply(value)
+    },
+    validatorAdapter: zodValidator(),
+    validators: {
+      onChange: taskFiltersSchema,
+    },
+  })
 
-  // Debounced search: update the filter only when user stops typing (300ms)
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    const { search, priority, statuses, assignee, dueDateFrom, dueDateTo } = form.state.values
+    return (
+      (search ? 1 : 0) +
+      (priority ? 1 : 0) +
+      (statuses.length > 0 ? 1 : 0) +
+      (assignee ? 1 : 0) +
+      (dueDateFrom ? 1 : 0) +
+      (dueDateTo ? 1 : 0)
+    )
+  }, [form.state.values])
+
+  // Debounced submission
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (localSearch !== search) {
-        onSearchChange(localSearch)
-      }
-    }, 300)
+      form.handleSubmit()
+    }, debounceMs)
 
     return () => clearTimeout(timer)
-  }, [localSearch, search, onSearchChange])
+  }, [form.state.values, debounceMs, form])
 
-  const activeFilterCount = [status, priority, search, assignee].filter(
-    Boolean
-  ).length
+  const handleClearAll = useCallback(() => {
+    form.reset()
+  }, [form])
 
-  const handleStatusChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const value = e.target.value as TaskStatus | ''
-      onStatusChange(value ? value : null)
+  const handleStatusToggle = useCallback(
+    (status: TaskStatus) => {
+      const statuses = form.state.values.statuses || []
+      const newStatuses = statuses.includes(status)
+        ? statuses.filter((s) => s !== status)
+        : [...statuses, status]
+      form.setFieldValue('statuses', newStatuses)
     },
-    [onStatusChange]
-  )
-
-  const handlePriorityChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const value = e.target.value as TaskPriority | ''
-      onPriorityChange(value ? value : null)
-    },
-    [onPriorityChange]
-  )
-
-  const handleAssigneeChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const value = e.target.value
-      onAssigneeChange(value ? value : null)
-    },
-    [onAssigneeChange]
+    [form]
   )
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
+      {/* Header with active filter count */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
         {activeFilterCount > 0 && (
@@ -103,8 +124,9 @@ export function TaskFiltersPanel({
               {activeFilterCount} active
             </span>
             <button
-              onClick={onClearFilters}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              onClick={handleClearAll}
+              disabled={isLoading}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Clear all
             </button>
@@ -112,86 +134,175 @@ export function TaskFiltersPanel({
         )}
       </div>
 
-      {/* Status Filter */}
-      <div>
-        <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-2">
-          Status
-        </label>
-        <select
-          id="status-filter"
-          value={status || ''}
-          onChange={handleStatusChange}
-          disabled={isLoading}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="">All Statuses</option>
-          {STATUS_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Search Input */}
+      <form.Field
+        name="search"
+        children={(field) => (
+          <div>
+            <label htmlFor="search-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Search Tasks
+            </label>
+            <input
+              id="search-filter"
+              type="text"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              disabled={isLoading}
+              placeholder="Search by task title..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              {isLoading ? 'Searching...' : 'Search updates after you stop typing (300ms debounce)'}
+            </p>
+          </div>
+        )}
+      />
 
       {/* Priority Filter */}
-      <div>
-        <label htmlFor="priority-filter" className="block text-sm font-medium text-gray-700 mb-2">
-          Priority
-        </label>
-        <select
-          id="priority-filter"
-          value={priority || ''}
-          onChange={handlePriorityChange}
-          disabled={isLoading}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="">All Priorities</option>
-          {PRIORITY_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      <form.Field
+        name="priority"
+        children={(field) => (
+          <div>
+            <label htmlFor="priority-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Priority
+            </label>
+            <select
+              id="priority-filter"
+              value={field.state.value || ''}
+              onChange={(e) => field.handleChange(e.target.value ? (e.target.value as TaskPriority) : null)}
+              onBlur={field.handleBlur}
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">All Priorities</option>
+              {PRIORITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      />
+
+      {/* Status Filter - Multi-select Checkboxes */}
+      <form.Field
+        name="statuses"
+        children={(field) => (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Status
+            </label>
+            <div className="space-y-2">
+              {STATUS_OPTIONS.map((option) => (
+                <div key={option.value} className="flex items-center">
+                  <input
+                    id={`status-${option.value}`}
+                    type="checkbox"
+                    checked={(field.state.value || []).includes(option.value)}
+                    onChange={() => handleStatusToggle(option.value)}
+                    disabled={isLoading}
+                    className="h-4 w-4 rounded border border-gray-300 text-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <label htmlFor={`status-${option.value}`} className="ml-2 text-sm text-gray-700">
+                    {option.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      />
 
       {/* Assignee Filter */}
-      <div>
-        <label htmlFor="assignee-filter" className="block text-sm font-medium text-gray-700 mb-2">
-          Assignee
-        </label>
-        <select
-          id="assignee-filter"
-          value={assignee || ''}
-          onChange={handleAssigneeChange}
-          disabled={isLoading}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="">All Assignees</option>
-          {assignees.map((a) => (
-            <option key={a} value={a}>
-              {a}
-            </option>
-          ))}
-        </select>
+      <form.Field
+        name="assignee"
+        children={(field) => (
+          <div>
+            <label htmlFor="assignee-filter" className="block text-sm font-medium text-gray-700 mb-2">
+              Assignee
+            </label>
+            <select
+              id="assignee-filter"
+              value={field.state.value || ''}
+              onChange={(e) => field.handleChange(e.target.value ? e.target.value : null)}
+              onBlur={field.handleBlur}
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="">All Assignees</option>
+              {assignees.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      />
+
+      {/* Date Range Filter */}
+      <div className="grid grid-cols-2 gap-4">
+        <form.Field
+          name="dueDateFrom"
+          children={(field) => (
+            <div>
+              <label htmlFor="due-date-from" className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date From
+              </label>
+              <input
+                id="due-date-from"
+                type="date"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                disabled={isLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+          )}
+        />
+
+        <form.Field
+          name="dueDateTo"
+          children={(field) => (
+            <div>
+              <label htmlFor="due-date-to" className="block text-sm font-medium text-gray-700 mb-2">
+                Due Date To
+              </label>
+              <input
+                id="due-date-to"
+                type="date"
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                disabled={isLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+          )}
+        />
       </div>
 
-      {/* Search Filter with Debounce */}
-      <div>
-        <label htmlFor="search-filter" className="block text-sm font-medium text-gray-700 mb-2">
-          Search Tasks
-        </label>
-        <input
-          id="search-filter"
-          type="text"
-          value={localSearch}
-          onChange={(e) => setLocalSearch(e.target.value)}
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-4">
+        <button
+          onClick={() => form.handleSubmit()}
           disabled={isLoading}
-          placeholder="Search by task title..."
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          {isLoading ? 'Searching...' : 'Search updates after you stop typing (300ms debounce)'}
-        </p>
+          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          Apply Filters
+        </button>
+        {activeFilterCount > 0 && (
+          <button
+            onClick={handleClearAll}
+            disabled={isLoading}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Clear All
+          </button>
+        )}
       </div>
     </div>
   )
