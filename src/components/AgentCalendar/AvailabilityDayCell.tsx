@@ -1,4 +1,3 @@
-import { isToday } from 'date-fns'
 import type { DailyAvailability } from '../../types/agent'
 import { ConflictIndicator } from './ConflictIndicator'
 
@@ -9,6 +8,10 @@ interface AvailabilityDayCellProps {
   isCurrentMonth: boolean
 }
 
+/**
+ * Renders a single day cell in the calendar
+ * Shows availability status, task count, and conflict indicators
+ */
 export function AvailabilityDayCell({
   date,
   availability,
@@ -16,7 +19,13 @@ export function AvailabilityDayCell({
   isCurrentMonth,
 }: AvailabilityDayCellProps) {
   const day = date.getDate()
-  const isToday_ = isToday(date)
+  
+  // Check if this is today
+  const today = new Date()
+  const isToday =
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
 
   // Determine background color based on availability
   let bgColor = 'bg-white'
@@ -38,7 +47,7 @@ export function AvailabilityDayCell({
     availabilityDisplay = 'Partial'
   }
 
-  const ringColor = isToday_ ? 'ring-2 ring-blue-500' : ''
+  const ringColor = isToday ? 'ring-2 ring-blue-500' : ''
 
   return (
     <div

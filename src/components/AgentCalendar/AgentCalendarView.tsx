@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
-import { eachDayOfInterval, startOfMonth, endOfMonth, addMonths, subtractMonths } from 'date-fns'
 import type { DailyAvailability } from '../../types/agent'
 import { AgentCalendarHeader } from './AgentCalendarHeader'
 import { AvailabilityDayCell } from './AvailabilityDayCell'
@@ -43,55 +42,46 @@ export function AgentCalendarView({
   }, [availability])
 
   // Generate all dates for calendar grid
-  const monthStart = startOfMonth(currentDate)
-  const monthEnd = endOfMonth(currentDate)
-  
   const calendarDays = useMemo(() => {
-    const days = eachDayOfInterval({
-      start: monthStart,
-      end: monthEnd,
-    })
-
+    const monthStart = new Date(year, month - 1, 1)
+    const monthEnd = new Date(year, month, 0)
+    
+    const days: Date[] = []
+    
     // Get first day padding (previous month dates)
     const firstDayOfWeek = monthStart.getDay()
-    const previousMonthEnd = new Date(monthStart)
-    previousMonthEnd.setDate(0)
-    
-    const paddingDays = []
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const date = new Date(previousMonthEnd)
-      date.setDate(previousMonthEnd.getDate() - i)
-      paddingDays.push(date)
+      const date = new Date(monthStart)
+      date.setDate(monthStart.getDate() - i - 1)
+      days.push(date)
+    }
+
+    // Add all days of current month
+    for (let d = 1; d <= monthEnd.getDate(); d++) {
+      days.push(new Date(year, month - 1, d))
     }
 
     // Get last day padding (next month dates)
     const lastDayOfWeek = monthEnd.getDay()
-    const nextMonthStart = new Date(monthEnd)
-    nextMonthStart.setDate(1)
-    nextMonthStart.setMonth(nextMonthStart.getMonth() + 1)
-    
-    const trailingDays = []
     for (let i = 1; i < 7 - lastDayOfWeek; i++) {
-      const date = new Date(nextMonthStart)
-      date.setDate(i)
-      trailingDays.push(date)
+      days.push(new Date(year, month, i))
     }
 
-    return [...paddingDays, ...days, ...trailingDays]
-  }, [monthStart, monthEnd])
+    return days
+  }, [month, year])
 
   // Navigation handlers
   const handlePrevMonth = useCallback(() => {
-    const newDate = subtractMonths(currentDate, 1)
+    const newDate = new Date(year, month - 2, 1)
     setCurrentDate(newDate)
     onMonthChange?.(newDate.getMonth() + 1, newDate.getFullYear())
-  }, [currentDate, onMonthChange])
+  }, [month, year, onMonthChange])
 
   const handleNextMonth = useCallback(() => {
-    const newDate = addMonths(currentDate, 1)
+    const newDate = new Date(year, month, 1)
     setCurrentDate(newDate)
     onMonthChange?.(newDate.getMonth() + 1, newDate.getFullYear())
-  }, [currentDate, onMonthChange])
+  }, [month, year, onMonthChange])
 
   // Keyboard navigation
   const containerRef = useRef<HTMLDivElement>(null)
