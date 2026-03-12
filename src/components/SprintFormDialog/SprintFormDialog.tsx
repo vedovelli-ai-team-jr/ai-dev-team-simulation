@@ -2,6 +2,8 @@ import { useForm } from '@tanstack/react-form'
 import { useState, useEffect, useCallback } from 'react'
 import type { Sprint } from '../../types/sprint'
 import { useSprintForm, type AgentWithLoad } from '../../hooks/useSprintForm'
+import { ConflictBanner } from '../ConflictBanner/ConflictBanner'
+import { ConflictModal, type ConflictState } from '../ConflictModal/ConflictModal'
 
 interface SprintFormData {
   name: string
@@ -34,6 +36,8 @@ export function SprintFormDialog({
   const [loadingAgents, setLoadingAgents] = useState(false)
   const [capacityWarning, setCapacityWarning] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
+  const [conflictState, setConflictState] = useState<ConflictState | null>(null)
+  const [showConflictModal, setShowConflictModal] = useState(false)
 
   const sprintForm = useSprintForm()
 
@@ -134,47 +138,85 @@ export function SprintFormDialog({
     }
   }
 
+  const handleResolveConflict = (resolution: 'reload' | 'override') => {
+    setShowConflictModal(false)
+    if (resolution === 'reload') {
+      // Reset form to server version
+      form.reset()
+      setConflictState(null)
+    } else if (resolution === 'override') {
+      // Keep local changes and proceed with submission
+      setConflictState(null)
+      form.handleSubmit()
+    }
+  }
+
+  const handleViewConflict = () => {
+    setShowConflictModal(true)
+  }
+
   if (!isOpen) return null
 
   const nameValue = form.getFieldValue('name')
   const statusValue = form.getFieldValue('status')
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-      onClick={handleBackdropClick}
-      onKeyDown={handleKeyDown}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="sprint-form-title"
-    >
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
-        <div className="p-6">
-          <h2
-            id="sprint-form-title"
-            className="text-xl font-semibold mb-1"
-          >
-            {mode === 'create' ? 'Create Sprint' : 'Edit Sprint'}
-          </h2>
-          <p className="text-sm text-gray-600 mb-6">
-            {mode === 'create'
-              ? 'Start a new sprint'
-              : `Update "${sprint?.name}"`}
-          </p>
+    <>
+      <ConflictModal
+        isOpen={showConflictModal}
+        conflictState={
+          conflictState || {
+            hasConflict: false,
+            localVersion: {},
+            serverVersion: {},
+          }
+        }
+        onResolve={handleResolveConflict}
+        onCancel={() => setShowConflictModal(false)}
+        entityType="sprint"
+      />
+      <div
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        onClick={handleBackdropClick}
+        onKeyDown={handleKeyDown}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sprint-form-title"
+      >
+        <div className="bg-white rounded-lg shadow-lg max-w-md w-full mx-4">
+          <div className="p-6">
+            <h2
+              id="sprint-form-title"
+              className="text-xl font-semibold mb-1"
+            >
+              {mode === 'create' ? 'Create Sprint' : 'Edit Sprint'}
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              {mode === 'create'
+                ? 'Start a new sprint'
+                : `Update "${sprint?.name}"`}
+            </p>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.handleSubmit()
-            }}
-            className="space-y-4"
-          >
-            {/* API Error */}
-            {apiError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-700">{apiError}</p>
-              </div>
-            )}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                form.handleSubmit()
+              }}
+              className="space-y-4"
+            >
+              {/* Conflict Banner */}
+              <ConflictBanner
+                hasConflict={conflictState?.hasConflict ?? false}
+                onViewConflict={handleViewConflict}
+                entityType="sprint"
+              />
+
+              {/* API Error */}
+              {apiError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-700">{apiError}</p>
+                </div>
+              )}
 
             {/* Name Field */}
             <form.Field
@@ -580,9 +622,10 @@ export function SprintFormDialog({
                     : 'Update Sprint'}
               </button>
             </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
