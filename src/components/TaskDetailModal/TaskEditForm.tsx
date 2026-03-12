@@ -4,6 +4,8 @@ import type { Task, UpdateTaskInput } from '../../types/task'
 import { useUpdateTask } from '../../hooks/useUpdateTask'
 import { useUpdateTaskDependencies } from '../../hooks/useUpdateTaskDependencies'
 import { TaskDependencyWidget } from '../TaskDependencyWidget'
+import { ConflictBanner } from '../ConflictBanner/ConflictBanner'
+import { ConflictModal, type ConflictState } from '../ConflictModal/ConflictModal'
 
 interface TaskEditFormProps {
   task: Task
@@ -31,6 +33,8 @@ export function TaskEditForm({
   onUnsavedChangesChange,
 }: TaskEditFormProps) {
   const [apiError, setApiError] = useState<string | null>(null)
+  const [conflictState, setConflictState] = useState<ConflictState | null>(null)
+  const [showConflictModal, setShowConflictModal] = useState(false)
   const updateMutation = useUpdateTask()
   const updateDependenciesMutation = useUpdateTaskDependencies()
 
@@ -134,20 +138,58 @@ export function TaskEditForm({
     }
   }
 
+  const handleResolveConflict = (resolution: 'reload' | 'override') => {
+    setShowConflictModal(false)
+    if (resolution === 'reload') {
+      // Reset form to server version
+      form.reset()
+      setConflictState(null)
+    } else if (resolution === 'override') {
+      // Keep local changes and proceed with submission
+      setConflictState(null)
+      form.handleSubmit()
+    }
+  }
+
+  const handleViewConflict = () => {
+    setShowConflictModal(true)
+  }
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        form.handleSubmit()
-      }}
-      className="space-y-4"
-    >
-      {/* API Error */}
-      {apiError && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-700">{apiError}</p>
-        </div>
-      )}
+    <>
+      <ConflictModal
+        isOpen={showConflictModal}
+        conflictState={
+          conflictState || {
+            hasConflict: false,
+            localVersion: {},
+            serverVersion: {},
+          }
+        }
+        onResolve={handleResolveConflict}
+        onCancel={() => setShowConflictModal(false)}
+        entityType="task"
+      />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          form.handleSubmit()
+        }}
+        className="space-y-4"
+      >
+        {/* Conflict Banner */}
+        <ConflictBanner
+          hasConflict={conflictState?.hasConflict ?? false}
+          onViewConflict={handleViewConflict}
+          entityType="task"
+        />
+
+        {/* API Error */}
+        {apiError && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-700">{apiError}</p>
+          </div>
+        )}
 
       {/* Title Field */}
       <form.Field
@@ -421,6 +463,7 @@ export function TaskEditForm({
           {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
-    </form>
+      </form>
+    </>
   )
 }
