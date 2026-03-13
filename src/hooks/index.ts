@@ -68,14 +68,6 @@ export type {
 } from '../types/agentAvailability'
 export { useRealtimeSync } from './useRealtimeSync'
 export type { UseRealtimeSyncOptions, UseRealtimeSyncReturn } from './useRealtimeSync'
-export { useNotificationPreferences } from './useNotificationPreferences'
-export type { UseNotificationPreferencesReturn } from './useNotificationPreferences'
-export type {
-  NotificationPreferences,
-  UpdateNotificationPreferencesPayload,
-  NotificationFrequency,
-  NotificationChannel,
-  NotificationTypePreference,
-  NotificationTypePreferences,
-  NotificationPreferencesResponse,
-} from '../types/notification-preferences'
+export { useTaskSearch } from './useTaskSearch'
+export type { UseTaskSearchReturn } from '../types/task-search'
+export { useTaskSearchFilters } from './useTaskSearchFilters'

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNotifications } from '../../hooks/useNotifications'
-import { UnreadBadge } from '../UnreadBadge'
 import { NotificationItem } from './NotificationItem'
 
 /**
@@ -116,9 +115,14 @@ export function NotificationCenter() {
         </svg>
 
         {/* Badge Count */}
-        <div className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2">
-          <UnreadBadge count={unreadCount} showPulse={true} />
-        </div>
+        {unreadCount > 0 && (
+          <span
+            className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full"
+            aria-label={`${unreadCount} unread notifications`}
+          >
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
       </button>
 
       {/* Dropdown Panel */}

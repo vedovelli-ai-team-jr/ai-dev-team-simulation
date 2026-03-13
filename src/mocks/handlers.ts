@@ -22,7 +22,6 @@ import { agentStatusHandlers } from './handlers/agentStatus'
 import { permissionHandlers } from './handlers/permissions'
 import { agentManagementHandlers } from './handlers/agents'
 import { notificationHandlers } from './handlers/notifications'
-import { notificationPreferencesHandlers } from './handlers/notification-preferences'
 import { taskExecutionHandlers } from './handlers/taskExecution'
 import { agentPresenceHandlers } from './handlers/agentPresence'
 import { workloadHandlers } from './handlers/workload'
@@ -31,6 +30,7 @@ import { agentAnalyticsHandlers } from './handlers/agentAnalytics'
 import { templateHandlers } from './handlers/templates'
 import { analyticsHandlers } from './handlers/analytics'
 import { searchHandlers } from './handlers/search'
+import { taskSearchHandlers } from './handlers/task-search'
 import { dependencyHandlers } from './handlers/dependencies'
 
 interface Team {
@@ -2576,7 +2576,6 @@ export const paginatedHandlers = [
   ...permissionHandlers,
   ...agentManagementHandlers,
   ...notificationHandlers,
-  ...notificationPreferencesHandlers,
   ...taskExecutionHandlers,
   ...agentPresenceHandlers,
   ...workloadHandlers,
@@ -2585,5 +2584,6 @@ export const paginatedHandlers = [
   ...templateHandlers,
   ...analyticsHandlers,
   ...searchHandlers,
+  ...taskSearchHandlers,
   ...dependencyHandlers,
 ]
