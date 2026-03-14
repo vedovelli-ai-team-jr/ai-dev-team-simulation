@@ -10,6 +10,7 @@ import { TeamCapacityPanel, type TeamMember } from './TeamCapacityPanel'
 import { DashboardSkeleton } from '../Skeletons'
 import { SprintMetricsPanel } from './SprintMetricsPanel'
 import { AgentWorkloadChart } from './AgentWorkloadChart'
+import { SprintProgressBar } from '../StatusIndicators'
 
 interface SprintDashboardProps {
   sprintId?: string
@@ -162,25 +163,16 @@ export function SprintDashboard({ sprintId: initialSprintId, sprints = [] }: Spr
         </div>
 
         {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-300">Progress</span>
-            <span className="font-semibold text-blue-400">{summary.completionPercentage}%</span>
-          </div>
-          <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-            <div
-              className="h-full transition-all duration-300 bg-gradient-to-r from-blue-500 to-blue-600"
-              style={{ width: `${summary.completionPercentage}%` }}
-              role="progressbar"
-              aria-valuenow={summary.completionPercentage}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Sprint progress ${summary.completionPercentage}%`}
-            ></div>
-          </div>
-          <p className="text-xs text-slate-400">
-            {summary.completedTasks} of {summary.totalTasks} tasks completed
-          </p>
+        <div className="space-y-3">
+          <span className="text-sm text-slate-300 block">Progress</span>
+          <SprintProgressBar
+            completedCount={summary.completedTasks}
+            totalCount={summary.totalTasks}
+            showLabel={true}
+            showPercentage={true}
+            animated={true}
+            height="md"
+          />
         </div>
       </div>
 
