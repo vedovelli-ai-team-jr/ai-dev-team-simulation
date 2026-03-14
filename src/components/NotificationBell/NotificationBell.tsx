@@ -1,76 +1,51 @@
-import { useState, useEffect } from 'react'
-import { Bell } from 'lucide-react'
 import { useNotifications } from '../../hooks/useNotifications'
-import { NotificationCenterModal } from '../NotificationCenter/NotificationCenterModal'
 
-/**
- * NotificationBell Component
- *
- * Displays a bell icon button with an unread count badge that opens the notification center modal.
- *
- * Features:
- * - Bell icon with unread count badge (hidden when 0)
- * - Pulse animation on badge (stops when modal opens, resets on new unread)
- * - Badge turns red for high-priority notifications
- * - Accessible: `aria-label` with unread count, keyboard operable
- * - Clicking opens the NotificationCenterModal
- * - Integrates with useNotifications hook for real-time data
- */
-export function NotificationBell() {
+interface NotificationBellProps {
+  onClick: () => void
+  className?: string
+}
+
+export function NotificationBell({ onClick, className = '' }: NotificationBellProps) {
   const { unreadCount } = useNotifications()
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [shouldPulse, setShouldPulse] = useState(unreadCount > 0)
-  const [previousUnreadCount, setPreviousUnreadCount] = useState(unreadCount)
 
-  // Check if there are high-priority/urgent notifications
-  const { notifications } = useNotifications()
-  const hasUrgentNotifications = notifications.some((n) => n.priority === 'high')
+  // Format badge text: show "99+" when count exceeds 99
+  const badgeText = unreadCount > 99 ? '99+' : String(unreadCount)
 
-  // Stop pulse when modal opens
-  useEffect(() => {
-    if (isModalOpen) {
-      setShouldPulse(false)
-    }
-  }, [isModalOpen])
-
-  // Reset pulse when new unread notification arrives
-  useEffect(() => {
-    if (unreadCount > previousUnreadCount && !isModalOpen) {
-      setShouldPulse(true)
-    }
-    setPreviousUnreadCount(unreadCount)
-  }, [unreadCount, previousUnreadCount, isModalOpen])
-
-  const badgeLabel = unreadCount > 9 ? '9+' : String(unreadCount)
-  const ariaLabel = `Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`
+  // Dynamic aria-label for accessibility
+  const ariaLabel =
+    unreadCount === 0
+      ? 'Notifications'
+      : unreadCount === 1
+        ? '1 unread notification'
+        : `${unreadCount} unread notifications`
 
   return (
-    <>
-      {/* Bell Button */}
-      <button
-        onClick={() => setIsModalOpen(true)}
-        aria-label={ariaLabel}
-        aria-expanded={isModalOpen}
-        aria-haspopup="dialog"
-        className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+    <button
+      onClick={onClick}
+      className={`relative p-2 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${className}`}
+      aria-label={ariaLabel}
+    >
+      {/* Bell icon */}
+      <svg
+        className="w-6 h-6 text-slate-700"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
       >
-        <Bell className="w-5 h-5" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+        />
+      </svg>
 
-        {/* Unread Badge - turns red for urgent notifications */}
-        {unreadCount > 0 && (
-          <span
-            className={`absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white rounded-full ${
-              hasUrgentNotifications ? 'bg-red-500' : 'bg-red-500'
-            } ${shouldPulse ? 'animate-pulse-badge' : ''}`}
-            aria-label={`${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
-          >
-            {badgeLabel}
-          </span>
-        )}
-      </button>
-
-      {/* Notification Center Modal */}
-      <NotificationCenterModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </>
+      {/* Unread count badge */}
+      {unreadCount > 0 && (
+        <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
+          {badgeText}
+        </span>
+      )}
+    </button>
   )
 }
