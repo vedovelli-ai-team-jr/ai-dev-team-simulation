@@ -11,6 +11,7 @@ import { DashboardSkeleton } from '../Skeletons'
 import { SprintMetricsPanel } from './SprintMetricsPanel'
 import { AgentWorkloadChart } from './AgentWorkloadChart'
 import { SprintProgressBar } from '../StatusIndicators'
+import { AgentCardList } from '../AgentPerformanceCard'
 
 interface SprintDashboardProps {
   sprintId?: string
@@ -191,6 +192,9 @@ export function SprintDashboard({ sprintId: initialSprintId, sprints = [] }: Spr
           <SprintMetricsPanel sprintId={selectedSprintId} refetchInterval={30 * 1000} />
         </>
       )}
+
+      {/* Agent Performance Cards with Task Assignment */}
+      <AgentCardList />
 
       {/* Agent Filter Controls */}
       {workloadList && workloadList.length > 0 && (
