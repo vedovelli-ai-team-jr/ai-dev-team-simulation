@@ -1,13 +1,37 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useRef, useEffect, useState } from 'react'
 import { useNotifications } from '../../hooks/useNotifications'
+import { useNotificationCenter } from '../../contexts/NotificationCenterProvider'
 
-interface NotificationBellProps {
-  className?: string
-}
-
-export function NotificationBell({ className = '' }: NotificationBellProps) {
-  const navigate = useNavigate()
+/**
+ * NotificationBell Component
+ *
+ * Displays a notification bell icon with an animated badge showing unread count.
+ * Integrates with NotificationCenter modal for opening/closing the notification panel.
+ *
+ * Features:
+ * - Animated pulse on new notifications
+ * - Unread count badge (capped at "99+")
+ * - Active/highlighted state when modal is open
+ * - Accessible with aria-label and aria-live
+ * - Responsive touch target (44x44px minimum on mobile)
+ * - Smooth CSS transitions when count changes
+ */
+export function NotificationBell() {
   const { unreadCount } = useNotifications()
+  const { isPanelOpen, togglePanel } = useNotificationCenter()
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const [prevCount, setPrevCount] = useState(unreadCount)
+  const [showPulse, setShowPulse] = useState(false)
+
+  // Trigger pulse animation when unread count increases
+  useEffect(() => {
+    if (unreadCount > prevCount) {
+      setShowPulse(true)
+      const timer = setTimeout(() => setShowPulse(false), 600)
+      return () => clearTimeout(timer)
+    }
+    setPrevCount(unreadCount)
+  }, [unreadCount, prevCount])
 
   // Format badge text: show "99+" when count exceeds 99
   const badgeText = unreadCount > 99 ? '99+' : String(unreadCount)
@@ -20,19 +44,21 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
         ? '1 unread notification'
         : `${unreadCount} unread notifications`
 
-  const handleClick = () => {
-    navigate({ to: '/notifications' })
-  }
-
   return (
     <button
-      onClick={handleClick}
-      className={`relative p-2 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${className}`}
+      ref={buttonRef}
+      onClick={togglePanel}
+      className={`relative p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 min-h-11 min-w-11 sm:min-h-12 sm:min-w-12 flex items-center justify-center ${
+        isPanelOpen
+          ? 'bg-slate-800 text-blue-400'
+          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+      }`}
       aria-label={ariaLabel}
+      aria-pressed={isPanelOpen}
     >
       {/* Bell icon */}
       <svg
-        className="w-6 h-6 text-slate-700"
+        className="w-6 h-6 transition-transform duration-200"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -45,11 +71,28 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
         />
       </svg>
 
-      {/* Unread count badge */}
+      {/* Unread count badge with pulse animation */}
       {unreadCount > 0 && (
-        <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-          {badgeText}
-        </span>
+        <>
+          {/* Pulse ring effect when new notification arrives */}
+          {showPulse && (
+            <span
+              className="absolute inset-0 rounded-full bg-red-600 animate-ping"
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Badge count */}
+          <span
+            className={`absolute top-0 right-0 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full transition-all duration-200 ${
+              showPulse ? 'scale-110' : 'scale-100'
+            }`}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {badgeText}
+          </span>
+        </>
       )}
     </button>
   )
