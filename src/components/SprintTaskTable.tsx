@@ -1,27 +1,9 @@
 import { useMemo, useState, useCallback } from 'react'
-import type { SprintTask, TaskStatus, TaskPriority } from '../types/sprint'
+import type { SprintTask } from '../types/sprint'
 import { useTable } from '../hooks/useTable'
 import { TaskDependencyBadge } from './TaskDependencyBadge'
 import { useTasks } from '../hooks/useTasks'
-
-const STATUS_COLORS: Record<TaskStatus, string> = {
-  'backlog': 'bg-slate-500/20 text-slate-300',
-  'in-progress': 'bg-blue-500/20 text-blue-300',
-  'in-review': 'bg-yellow-500/20 text-yellow-300',
-  'done': 'bg-green-500/20 text-green-300',
-}
-
-const PRIORITY_COLORS: Record<TaskPriority, string> = {
-  'low': 'text-slate-400',
-  'medium': 'text-yellow-400',
-  'high': 'text-red-400',
-}
-
-const PRIORITY_LABELS: Record<TaskPriority, string> = {
-  'low': 'Low',
-  'medium': 'Medium',
-  'high': 'High',
-}
+import { TaskStatusBadge, TaskPriorityIndicator } from './StatusIndicators'
 
 export interface SprintTaskTableProps {
   tasks: SprintTask[]
@@ -195,19 +177,13 @@ export function SprintTaskTable({
                   <span className="text-white">{task.title}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[task.status]}`}>
-                    {task.status === 'in-progress' ? 'In Progress' :
-                     task.status === 'in-review' ? 'In Review' :
-                     task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                  </span>
+                  <TaskStatusBadge status={task.status} size="sm" />
                 </td>
                 <td className="px-4 py-3">
                   <span className="text-slate-300">{task.assignee}</span>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`text-sm font-medium ${PRIORITY_COLORS[task.priority]}`}>
-                    {PRIORITY_LABELS[task.priority]}
-                  </span>
+                  <TaskPriorityIndicator priority={task.priority} showIcon={true} size="sm" />
                 </td>
                 {visibleColumns.blockedBy && (
                   <td className="px-4 py-3">
