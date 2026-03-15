@@ -26,10 +26,12 @@ function LoadingSkeleton() {
 export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const [markAllError, setMarkAllError] = useState<string | null>(null)
   const {
     notifications,
     unreadCount,
     isLoading,
+    error,
     refetch,
     markAsRead,
     dismissNotification,
@@ -103,7 +105,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
               aria-selected={filter === tab}
               aria-label={`Show ${tab} notifications`}
             >
-              {tab === 'all' ? 'All' : `Unread (${unreadCount})`}
+              {tab === 'all' ? 'All' : unreadCount > 0 ? `Unread (${unreadCount})` : 'Unread'}
             </button>
           ))}
         </div>
@@ -111,7 +113,30 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        {isLoading && filteredNotifications.length === 0 ? (
+        {error ? (
+          <div className="px-4 py-8 text-center">
+            <svg
+              className="w-12 h-12 text-red-500 mx-auto mb-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="text-slate-400 text-sm mb-3">Failed to load notifications</p>
+            <button
+              onClick={() => refetch()}
+              className="text-xs px-3 py-1 bg-slate-700 text-slate-200 hover:text-white hover:bg-slate-600 rounded transition-colors"
+            >
+              Try again
+            </button>
+          </div>
+        ) : isLoading && filteredNotifications.length === 0 ? (
           <LoadingSkeleton />
         ) : filteredNotifications.length === 0 ? (
           <div className="px-4 py-8 text-center">
@@ -147,14 +172,29 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
       {/* Footer */}
       {notifications.length > 0 && (
         <div className="border-t border-slate-700 px-4 py-3 bg-slate-900/80 rounded-b-lg sticky bottom-0">
-          <button
-            onClick={() => markMultipleAsRead(notifications.filter((n) => !n.read).map((n) => n.id))}
-            disabled={unreadCount === 0}
-            className="w-full px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Mark all notifications as read"
-          >
-            Mark all as read
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={async () => {
+                try {
+                  setMarkAllError(null)
+                  const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id)
+                  if (unreadIds.length > 0) {
+                    await markMultipleAsRead(unreadIds)
+                  }
+                } catch (err) {
+                  setMarkAllError('Failed to mark all as read')
+                }
+              }}
+              disabled={unreadCount === 0}
+              className="w-full px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Mark all notifications as read"
+            >
+              Mark all as read
+            </button>
+            {markAllError && (
+              <p className="text-xs text-red-400 text-center">{markAllError}</p>
+            )}
+          </div>
         </div>
       )}
     </div>

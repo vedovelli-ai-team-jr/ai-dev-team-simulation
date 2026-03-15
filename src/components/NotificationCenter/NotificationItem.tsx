@@ -1,23 +1,10 @@
 import type { Notification } from '../../types/notification'
+import { getRelativeTime } from '../../lib/utils'
 
 interface NotificationItemProps {
   notification: Notification
   onMarkAsRead: (id: string) => void
   onDismiss: (id: string) => void
-}
-
-function getRelativeTime(timestamp: string): string {
-  const now = new Date()
-  const date = new Date(timestamp)
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
-
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
 }
 
 function getEventIcon(type: Notification['type']): React.ReactNode {
@@ -163,7 +150,7 @@ export function NotificationItem({
 
           {/* Timestamp and Read Indicator */}
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-slate-400">{getRelativeTime(notification.timestamp)}</span>
+            <span className="text-xs text-slate-400">{getRelativeTime(new Date(notification.timestamp))}</span>
             {!notification.read && (
               <span
                 className="w-2 h-2 bg-blue-500 rounded-full"
