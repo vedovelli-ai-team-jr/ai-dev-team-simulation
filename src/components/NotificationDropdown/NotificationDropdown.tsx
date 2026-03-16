@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useNotificationCenter } from '../../hooks/useNotificationCenter'
+import { useNotificationCenter as useNotifications } from '../../hooks/useNotificationCenter'
+import { useNotificationCenter as useNotificationPanel } from '../../contexts/NotificationCenterProvider'
 import { NotificationItem } from './NotificationItem'
-import { Link } from '@tanstack/react-router'
 
 interface NotificationDropdownProps {
   isOpen: boolean
@@ -40,16 +40,17 @@ function EmptyState() {
 }
 
 /**
- * NotificationDropdown displays a panel with recent notifications
+ * NotificationDropdown displays a panel with the 5 most recent notifications
  * Appears below the notification bell icon with smooth fade/slide animation
  *
  * Features:
+ * - Shows only 5 most recent notifications
  * - Dropdown panel positioned absolutely relative to bell
  * - Smooth open/close fade and scale animations
  * - Click-outside, Escape, and bell-click close handlers
  * - Max height with scrollable content
  * - Header with "Mark all as read" button
- * - Footer with link to settings page
+ * - Footer with "View all notifications" button to open NotificationCenter panel
  * - Responsive: full-width on mobile, fixed-width on desktop
  * - Accessible with proper ARIA labels and keyboard navigation
  */
@@ -64,12 +65,13 @@ export function NotificationDropdown({
     markAsRead,
     markMultipleAsRead,
     dismissNotification,
-  } = useNotificationCenter()
+  } = useNotifications()
+  const { openPanel } = useNotificationPanel()
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const firstFocusableRef = useRef<HTMLButtonElement>(null)
-  const lastFocusableRef = useRef<HTMLAnchorElement>(null)
+  const lastFocusableRef = useRef<HTMLButtonElement>(null)
 
   // Close on outside click
   useEffect(() => {
@@ -89,6 +91,9 @@ export function NotificationDropdown({
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen, onClose])
+
+  // Get 5 most recent notifications
+  const recentNotifications = notifications.slice(0, 5)
 
   // Close on Escape key
   useEffect(() => {
@@ -192,17 +197,17 @@ export function NotificationDropdown({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
-          {isLoading && notifications.length === 0 ? (
+          {isLoading && recentNotifications.length === 0 ? (
             <>
               <NotificationSkeleton />
               <NotificationSkeleton />
               <NotificationSkeleton />
             </>
-          ) : notifications.length === 0 ? (
+          ) : recentNotifications.length === 0 ? (
             <EmptyState />
           ) : (
             <div>
-              {notifications.map((notification) => (
+              {recentNotifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}
                   notification={notification}
@@ -215,15 +220,17 @@ export function NotificationDropdown({
 
         {/* Footer */}
         <div className="border-t px-4 py-3 flex-shrink-0">
-          <Link
+          <button
             ref={lastFocusableRef}
-            to="/settings"
-            onClick={onClose}
+            onClick={() => {
+              openPanel()
+              onClose()
+            }}
             className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-2 py-1 inline-block"
-            aria-label="Go to notification settings"
+            aria-label="View all notifications"
           >
-            View all settings
-          </Link>
+            View all notifications
+          </button>
         </div>
       </div>
     </>
