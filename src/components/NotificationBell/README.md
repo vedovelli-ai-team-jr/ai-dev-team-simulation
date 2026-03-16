@@ -18,7 +18,9 @@ A responsive notification bell icon component for the application header that di
 
 ## Usage
 
-The component is used in the application header and is ready to use out of the box:
+### Option 1: NotificationBell (Full Panel Integration)
+
+For integration with the full NotificationCenter modal:
 
 ```tsx
 import { NotificationBell } from '@/components/NotificationBell'
@@ -28,6 +30,23 @@ export function Header() {
     <nav>
       <h1>App Title</h1>
       <NotificationBell />
+    </nav>
+  )
+}
+```
+
+### Option 2: NotificationBellButton (With Dropdown Panel)
+
+For a lightweight dropdown showing the 5 most recent notifications (FAB-261):
+
+```tsx
+import { NotificationBellButton } from '@/components/NotificationBell'
+
+export function Header() {
+  return (
+    <nav>
+      <h1>App Title</h1>
+      <NotificationBellButton />
     </nav>
   )
 }
@@ -66,7 +85,9 @@ Currently, the component takes no props as it:
 - Derives state from the context directly
 - Manages badge animation internally
 
-## Acceptance Criteria (FAB-238)
+## Acceptance Criteria
+
+### NotificationBell (FAB-238)
 
 ✅ Bell icon in header/navbar
 ✅ Unread count badge overlaid on bell icon
@@ -79,7 +100,45 @@ Currently, the component takes no props as it:
 ✅ Proper Tailwind CSS styling
 ✅ Exported and integrated into app header
 
-## Related Components
+### NotificationBellButton (FAB-261)
+
+✅ Bell icon renders in header with unread badge count
+✅ Badge animates/pulses on new notifications
+✅ Dropdown opens/closes on bell click
+✅ Dropdown closes on outside click and Escape key
+✅ Shows 5 most recent notifications with type, title, timestamp
+✅ Click on notification marks it as read
+✅ "Mark all as read" button works
+✅ Empty state displayed when no unread notifications
+✅ Fully accessible (ARIA attributes, keyboard navigation)
+✅ Responsive and styled with Tailwind
+
+## NotificationBellButton Component
+
+An alternative to `NotificationBell` that includes an integrated dropdown panel showing the 5 most recent notifications. This component manages its own dropdown state independently of the full NotificationCenter modal.
+
+### Key Differences from NotificationBell
+
+| Feature | NotificationBell | NotificationBellButton |
+|---------|------------------|----------------------|
+| **Panel Type** | Full NotificationCenter modal | Lightweight dropdown |
+| **Recent Notifications** | All (in modal) | 5 most recent |
+| **State Management** | Context-driven | Local useState |
+| **Click Behavior** | Opens full modal | Toggles dropdown |
+| **Use Case** | Primary navigation | Quick notification check |
+
+### Features
+
+- Bell icon with animated badge
+- Local dropdown state management
+- Shows 5 most recent notifications
+- "Mark all as read" button
+- "View all notifications" link to open full NotificationCenter
+- Closes on outside click and Escape key
+- Full keyboard accessibility
+- Responsive Tailwind styling
+
+### Related Components
 
 - **NotificationDropdown**: Displays list of notifications in a dropdown panel
 - **NotificationCenter/NotificationCenterModal**: Full-screen notification panel with tabs
