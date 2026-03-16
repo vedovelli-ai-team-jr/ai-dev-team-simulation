@@ -4,6 +4,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { ToastProvider } from '../components/Toast'
 import { ToastContainer } from '../components/NotificationCenter'
 import { NotificationBell } from '../components/NotificationBell'
+import { NotificationBadge } from '../components/NotificationBadge'
 import { AppNotificationCenter } from '../components/AppNotificationCenter'
 import { Sidebar } from '../components/Sidebar'
 import { RouteErrorBoundary, NotFoundError } from '../components/RouteErrorBoundary'
@@ -101,7 +102,7 @@ function NavbarContent() {
                 </Link>
               </div>
             </div>
-            <NotificationBell />
+            <NotificationBadge onClick={togglePanel} />
           </div>
         </div>
       </nav>
