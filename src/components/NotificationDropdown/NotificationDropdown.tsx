@@ -44,7 +44,7 @@ function EmptyState() {
  */
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
-    <div className="px-6 py-12 text-center">
+    <div className="px-6 py-12 text-center" role="alert">
       <div className="mb-4 text-4xl">⚠️</div>
       <h3 className="text-slate-900 font-medium mb-1">Failed to load notifications</h3>
       <p className="text-sm text-slate-500 mb-4">Something went wrong. Please try again.</p>
@@ -84,7 +84,6 @@ export function NotificationDropdown({
     notifications,
     isLoading,
     isError,
-    error,
     refetch,
     markAsRead,
     markMultipleAsRead,
@@ -206,7 +205,7 @@ export function NotificationDropdown({
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {isError ? (
-            <ErrorState onRetry={() => refetch()} />
+            <ErrorState onRetry={() => refetch?.()} />
           ) : isLoading && recentNotifications.length === 0 ? (
             <>
               <NotificationSkeleton />
