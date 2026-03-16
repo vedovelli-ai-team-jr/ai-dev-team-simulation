@@ -1,42 +1,48 @@
-import { useState, useCallback } from 'react'
-import { Toast } from './Toast'
-import type { Notification } from '@/types/notification'
+import { useToastNotifications } from '../../hooks/useToastNotifications'
+import { ToastItem } from './ToastItem'
 
 interface ToastContainerProps {
-  notifications: Notification[]
-  maxToasts?: number
+  /** Duration in milliseconds before auto-dismiss (default: 4000 = 4s) */
+  autoDismissMs?: number
+  /** Maximum number of toasts visible at once (default: 3) */
+  maxVisible?: number
 }
 
-export function ToastContainer({ notifications, maxToasts = 3 }: ToastContainerProps) {
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
-
-  const handleDismiss = useCallback((id: string) => {
-    setDismissedIds((prev) => new Set([...prev, id]))
-  }, [])
-
-  // Only show recent non-dismissed toasts, capped at maxToasts
-  const visibleToasts = notifications
-    .filter((n) => !dismissedIds.has(n.id))
-    .slice(0, maxToasts)
-
-  if (visibleToasts.length === 0) {
-    return null
-  }
+/**
+ * Toast notification container component
+ *
+ * Features:
+ * - Fixed positioned container (bottom-right corner)
+ * - Renders stacked ToastItem components
+ * - Handles entry/exit animations (CSS transitions: slide-in from right, fade-out)
+ * - Accessible with proper ARIA attributes
+ * - Integrates with useToastNotifications hook
+ *
+ * Should be mounted at app root level (e.g., in App.tsx)
+ */
+export function ToastContainer({ autoDismissMs = 4000, maxVisible = 3 }: ToastContainerProps) {
+  const { toasts, dismissToast } = useToastNotifications({
+    autoDismissMs,
+    maxVisible,
+  })
 
   return (
     <div
-      className="fixed bottom-4 right-4 flex flex-col gap-2 pointer-events-none"
-      role="region"
-      aria-label="Notifications"
+      className="fixed bottom-4 right-4 z-50 pointer-events-none"
+      role="alert"
+      aria-live="polite"
+      aria-atomic="false"
     >
-      {visibleToasts.map((notification) => (
-        <div key={notification.id} className="pointer-events-auto animate-out fade-out slide-out-to-right-4 duration-300">
-          <Toast
-            notification={notification}
-            onDismiss={handleDismiss}
+      <div className="flex flex-col gap-2 pointer-events-auto">
+        {toasts.map((toast) => (
+          <ToastItem
+            key={toast.id}
+            notification={toast.notification}
+            onDismiss={() => dismissToast(toast.id)}
+            autoDismissMs={autoDismissMs}
           />
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
