@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNotificationCenter } from '../../hooks/useNotificationCenter'
 import { NotificationDropdown } from '../NotificationDropdown'
 
@@ -21,7 +21,6 @@ import { NotificationDropdown } from '../NotificationDropdown'
  */
 export function NotificationBellButton() {
   const { unreadCount } = useNotificationCenter()
-  const buttonRef = useRef<HTMLButtonElement>(null)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [prevCount, setPrevCount] = useState(unreadCount)
   const [showPulse, setShowPulse] = useState(false)
@@ -58,7 +57,6 @@ export function NotificationBellButton() {
   return (
     <div className="relative">
       <button
-        ref={buttonRef}
         onClick={toggleDropdown}
         className={`relative p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 min-h-11 min-w-11 sm:min-h-12 sm:min-w-12 flex items-center justify-center ${
           isDropdownOpen
