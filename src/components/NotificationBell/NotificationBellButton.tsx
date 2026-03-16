@@ -30,7 +30,7 @@ export function NotificationBellButton() {
   useEffect(() => {
     if (unreadCount > prevCount) {
       setShowPulse(true)
-      const timer = setTimeout(() => setShowPulse(false), 600)
+      const timer = setTimeout(() => setShowPulse(false), 1000)
       return () => clearTimeout(timer)
     }
     setPrevCount(unreadCount)

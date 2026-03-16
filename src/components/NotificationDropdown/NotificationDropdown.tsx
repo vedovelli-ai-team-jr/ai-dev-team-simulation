@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { useNotificationCenter as useNotificationCenterHook } from '../../hooks/useNotificationCenter'
-import { useNotificationCenter } from '../../contexts/NotificationCenterProvider'
+import { useNotificationCenter as useNotifications } from '../../hooks/useNotificationCenter'
+import { useNotificationCenter as useNotificationPanel } from '../../contexts/NotificationCenterProvider'
 import { NotificationItem } from './NotificationItem'
 
 interface NotificationDropdownProps {
@@ -65,8 +65,8 @@ export function NotificationDropdown({
     markAsRead,
     markMultipleAsRead,
     dismissNotification,
-  } = useNotificationCenterHook()
-  const { openPanel } = useNotificationCenter()
+  } = useNotifications()
+  const { openPanel } = useNotificationPanel()
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -139,7 +139,7 @@ export function NotificationDropdown({
   if (!isOpen) return null
 
   const handleMarkAllAsRead = async () => {
-    const unreadIds = recentNotifications
+    const unreadIds = notifications
       .filter((n) => !n.read)
       .map((n) => n.id)
 
