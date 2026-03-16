@@ -55,6 +55,7 @@ export function NotificationBell() {
       }`}
       aria-label={ariaLabel}
       aria-expanded={isPanelOpen}
+      aria-haspopup="dialog"
     >
       {/* Bell icon */}
       <svg

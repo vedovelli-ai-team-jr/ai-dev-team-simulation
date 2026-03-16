@@ -40,11 +40,11 @@ function EmptyState() {
 }
 
 /**
- * NotificationDropdown displays a panel with the 5 most recent notifications
+ * NotificationDropdown displays a panel with up to 10 most recent notifications
  * Appears below the notification bell icon with smooth fade/slide animation
  *
  * Features:
- * - Shows only 5 most recent notifications
+ * - Shows up to 10 most recent notifications
  * - Dropdown panel positioned absolutely relative to bell
  * - Smooth open/close fade and scale animations
  * - Click-outside, Escape, and bell-click close handlers
@@ -64,7 +64,6 @@ export function NotificationDropdown({
     isLoading,
     markAsRead,
     markMultipleAsRead,
-    dismissNotification,
   } = useNotifications()
   const { openPanel } = useNotificationPanel()
 
@@ -92,8 +91,8 @@ export function NotificationDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen, onClose])
 
-  // Get 5 most recent notifications
-  const recentNotifications = notifications.slice(0, 5)
+  // Get 10 most recent notifications
+  const recentNotifications = notifications.slice(0, 10)
 
   // Close on Escape key
   useEffect(() => {
@@ -148,12 +147,6 @@ export function NotificationDropdown({
     }
   }
 
-  const handleClearAll = () => {
-    notifications.forEach((notification) => {
-      dismissNotification(notification.id)
-    })
-  }
-
   return (
     <>
       {/* Backdrop for focus containment */}
@@ -175,23 +168,14 @@ export function NotificationDropdown({
         <div className="border-b px-4 py-3 flex items-center justify-between flex-shrink-0">
           <h2 className="text-sm font-semibold text-slate-900">Notifications</h2>
           {notifications.length > 0 && !isLoading && (
-            <div className="flex gap-2">
-              <button
-                ref={firstFocusableRef}
-                onClick={handleMarkAllAsRead}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-2 py-1"
-                aria-label="Mark all notifications as read"
-              >
-                Mark all as read
-              </button>
-              <button
-                onClick={handleClearAll}
-                className="text-xs text-red-600 hover:text-red-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 rounded px-2 py-1"
-                aria-label="Clear all notifications"
-              >
-                Clear all
-              </button>
-            </div>
+            <button
+              ref={firstFocusableRef}
+              onClick={handleMarkAllAsRead}
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-2 py-1"
+              aria-label="Mark all notifications as read"
+            >
+              Mark all as read
+            </button>
           )}
         </div>
 
