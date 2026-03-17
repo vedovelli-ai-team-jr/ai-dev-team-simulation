@@ -42,6 +42,8 @@ export interface TaskSearchFilters {
   status?: string
   assignedAgent?: string
   sprint?: string
+  deadlineFrom?: string
+  deadlineTo?: string
 }
 
 export interface UseTaskSearchReturn {

@@ -53,6 +53,20 @@ export function TaskSearchFilters({
     })
   }
 
+  const handleDeadlineFromChange = (date: string) => {
+    onFiltersChange({
+      ...filters,
+      deadlineFrom: date || undefined,
+    })
+  }
+
+  const handleDeadlineToChange = (date: string) => {
+    onFiltersChange({
+      ...filters,
+      deadlineTo: date || undefined,
+    })
+  }
+
   return (
     <div className="border-t border-slate-700">
       {/* Filter Header */}
@@ -178,6 +192,39 @@ export function TaskSearchFilters({
               </select>
             </div>
           )}
+
+          {/* Deadline Date Range */}
+          <div className="space-y-3 pt-2 border-t border-slate-700">
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wide">
+              Deadline
+            </label>
+            <div>
+              <label htmlFor="deadline-from" className="block text-xs text-slate-400 mb-1">
+                From
+              </label>
+              <input
+                id="deadline-from"
+                type="date"
+                value={filters.deadlineFrom || ''}
+                onChange={(e) => handleDeadlineFromChange(e.target.value)}
+                className="w-full px-2.5 py-2 rounded border border-slate-600 bg-slate-700 text-slate-300 text-sm hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                aria-label="Deadline from date"
+              />
+            </div>
+            <div>
+              <label htmlFor="deadline-to" className="block text-xs text-slate-400 mb-1">
+                To
+              </label>
+              <input
+                id="deadline-to"
+                type="date"
+                value={filters.deadlineTo || ''}
+                onChange={(e) => handleDeadlineToChange(e.target.value)}
+                className="w-full px-2.5 py-2 rounded border border-slate-600 bg-slate-700 text-slate-300 text-sm hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                aria-label="Deadline to date"
+              />
+            </div>
+          </div>
 
           {/* Clear All Button */}
           {hasActiveFilters && (
