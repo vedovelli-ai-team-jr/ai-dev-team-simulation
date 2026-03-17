@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { NotificationTypePreference, NotificationChannel } from '../../../types/notification-preferences'
 
 export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
@@ -30,6 +31,8 @@ export function NotificationTypeRow({
   isLoading,
   channelError,
 }: NotificationTypeRowProps) {
+  const [localChannelError, setLocalChannelError] = useState<string | null>(null)
+
   const handleFrequencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     onChange({
       ...preference,
@@ -41,6 +44,13 @@ export function NotificationTypeRow({
     const newChannels = preference.channels.includes(channel)
       ? preference.channels.filter((c) => c !== channel)
       : [...preference.channels, channel]
+
+    // Provide immediate field-level validation feedback
+    if (newChannels.length === 0) {
+      setLocalChannelError('At least one channel must be selected')
+    } else {
+      setLocalChannelError(null)
+    }
 
     onChange({
       ...preference,
@@ -99,8 +109,8 @@ export function NotificationTypeRow({
                 </label>
               ))}
             </div>
-            {channelError && (
-              <p className="text-xs text-red-400 mt-1">{channelError}</p>
+            {(localChannelError || channelError) && (
+              <p className="text-xs text-red-400 mt-1">{localChannelError || channelError}</p>
             )}
           </div>
         </div>
