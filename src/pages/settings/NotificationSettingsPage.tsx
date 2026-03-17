@@ -101,7 +101,7 @@ export function NotificationSettingsPage() {
       form.setFieldValue('preferences', newPrefs)
       setFieldErrors({})
     }
-  }, [preferences, isUpdating])
+  }, [preferences, isUpdating, form])
 
   const handlePreferenceChange = useCallback(
     (type: string, preference: NotificationTypePreference) => {
@@ -109,16 +109,17 @@ export function NotificationSettingsPage() {
         ...prev,
         [type]: preference,
       }))
-      // Clear error for this field when user changes it
-      if (fieldErrors[type]) {
-        setFieldErrors((prev) => {
+      // Clear error for this field when user changes it using functional update
+      setFieldErrors((prev) => {
+        if (prev[type]) {
           const next = { ...prev }
           delete next[type]
           return next
-        })
-      }
+        }
+        return prev
+      })
     },
-    [form, fieldErrors]
+    [form]
   )
 
   const handleReset = useCallback(async () => {
