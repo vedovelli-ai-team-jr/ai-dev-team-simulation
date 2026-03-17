@@ -14,6 +14,7 @@ export interface SearchTask {
   status: TaskStatus
   priority: TaskPriority
   sprint: string
+  deadline?: string
   matchedFields: ('title' | 'description')[]
 }
 
