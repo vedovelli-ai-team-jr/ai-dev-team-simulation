@@ -41,6 +41,7 @@ import { agentPerformanceHandlers } from './handlers/agent-performance'
 import { templateHandlers } from './handlers/templates'
 import { analyticsHandlers } from './handlers/analytics'
 import { searchHandlers } from './handlers/search'
+import { globalSearchHandlers } from './handlers/global-search'
 import { taskSearchHandlers } from './handlers/task-search'
 import { dependencyHandlers } from './handlers/dependencies'
 import { eventsHandlers } from './handlers/events'
@@ -2615,6 +2616,7 @@ export const paginatedHandlers = [
   ...templateHandlers,
   ...analyticsHandlers,
   ...searchHandlers,
+  ...globalSearchHandlers,
   ...taskSearchHandlers,
   ...dependencyHandlers,
   ...eventsHandlers,
