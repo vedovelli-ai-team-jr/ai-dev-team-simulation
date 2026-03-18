@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useState, useCallback, useMemo } from 'react'
+import React, { createContext, ReactNode, useState, useCallback, useMemo, useContext } from 'react'
 import type { Notification, NotificationFilter } from '../types/notification'
 import type { NotificationPreferences } from '../types/notification-preferences'
 import { useNotifications } from '../hooks/useNotifications'
@@ -190,3 +190,25 @@ export function NotificationCenterProvider({ children }: NotificationCenterProvi
     </NotificationCenterContext.Provider>
   )
 }
+
+/**
+ * Hook to access NotificationCenter context
+ *
+ * Must be used within NotificationCenterProvider
+ */
+export function useNotificationCenterContext(): NotificationCenterContextValue {
+  const context = useContext(NotificationCenterContext)
+
+  if (!context) {
+    throw new Error(
+      'useNotificationCenterContext must be used within NotificationCenterProvider'
+    )
+  }
+
+  return context
+}
+
+/**
+ * @deprecated Use useNotificationCenterContext instead
+ */
+export const useNotificationCenter = useNotificationCenterContext

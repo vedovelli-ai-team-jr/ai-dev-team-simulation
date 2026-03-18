@@ -1,9 +1,29 @@
 import { useQueries, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import type { Notification, NotificationEventType } from '../types/notification'
 import type { NotificationPreferences } from '../types/notification-preferences'
 import { useNotifications, type UseNotificationsOptions, notificationQueryKeys } from './useNotifications'
 import { useNotificationPreferences, type UseNotificationPreferencesOptions } from './useNotificationPreferences'
 import { useMutationWithRetry } from './useMutationWithRetry'
+
+/**
+ * Mapping of notification types to human-readable labels
+ * Used for display purposes across the notification center
+ */
+export const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
+  assignment_changed: 'Assignments',
+  sprint_updated: 'Sprints',
+  task_reassigned: 'Task Changes',
+  deadline_approaching: 'Deadlines',
+  task_assigned: 'Task Assignments',
+  task_unassigned: 'Unassignments',
+  sprint_started: 'Sprint Started',
+  sprint_completed: 'Sprint Completed',
+  comment_added: 'Comments',
+  status_changed: 'Status Changes',
+  agent_event: 'Agent Activity',
+  performance_alert: 'Performance Alerts',
+}
 
 /**
  * Configuration options for useNotificationCenter hook
@@ -508,6 +528,23 @@ export function useNotificationCenter(options: UseNotificationCenterOptions = {}
    */
   const bulkDelete = (ids: string[]) => bulkDeleteMutation.mutate(ids)
 
+  /**
+   * Group notifications by type with readable labels
+   */
+  const groupedByType = useMemo(() => {
+    const groups = new Map<string, Notification[]>()
+
+    filteredNotifications.forEach((notif) => {
+      const label = NOTIFICATION_TYPE_LABELS[notif.type] || notif.type
+      if (!groups.has(label)) {
+        groups.set(label, [])
+      }
+      groups.get(label)!.push(notif)
+    })
+
+    return groups
+  }, [filteredNotifications])
+
   return {
     // Filtered notifications (only types enabled in preferences + subscribed types)
     notifications: filteredNotifications,
@@ -576,6 +613,9 @@ export function useNotificationCenter(options: UseNotificationCenterOptions = {}
 
     // Total count of filtered notifications
     total: filteredNotifications.length,
+
+    // Grouping helpers
+    groupedByType,
   }
 }
 

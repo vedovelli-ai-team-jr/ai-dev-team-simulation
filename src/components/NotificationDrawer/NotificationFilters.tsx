@@ -1,0 +1,57 @@
+import type { Notification, NotificationType } from '../../types/notification'
+import { NOTIFICATION_TYPE_LABELS } from '../../hooks/useNotificationCenter'
+
+export type NotificationDrawerFilter = 'all' | NotificationType
+
+interface NotificationDrawerFiltersProps {
+  selectedFilter: NotificationDrawerFilter
+  onFilterChange: (filter: NotificationDrawerFilter) => void
+  groupedByType: Map<string, Notification[]>
+}
+
+/**
+ * Simplified filter controls for NotificationDrawer
+ *
+ * Features:
+ * - Filter by notification type (dynamically derived from available notifications)
+ * - Responsive design with horizontal scroll on mobile
+ */
+export function NotificationDrawerFilters({
+  selectedFilter,
+  onFilterChange,
+  groupedByType,
+}: NotificationDrawerFiltersProps) {
+  // Dynamically build filter options from available notification groups
+  const filterOptions = [
+    { label: 'All', value: 'all' as const },
+    ...Array.from(groupedByType.keys()).map((label) => {
+      // Find the notification type that maps to this label
+      const type = Object.entries(NOTIFICATION_TYPE_LABELS).find(
+        ([, mappedLabel]) => mappedLabel === label
+      )?.[0] as NotificationType | undefined
+
+      return {
+        label,
+        value: type || label,
+      }
+    }),
+  ]
+
+  return (
+    <div className="border-b border-gray-200 px-4 py-3 flex gap-2 overflow-x-auto">
+      {filterOptions.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onFilterChange(option.value)}
+          className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+            selectedFilter === option.value
+              ? 'bg-blue-100 text-blue-700'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  )
+}
