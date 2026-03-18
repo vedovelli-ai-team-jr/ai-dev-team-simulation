@@ -1,7 +1,6 @@
 import { forwardRef, useState } from 'react'
 import type { Notification } from '../../types/notification'
 import type { NotificationPreferences } from '../../types/notification-preferences'
-import { useNotifications } from '../../hooks/useNotifications'
 import { NotificationList } from './NotificationList'
 import { NotificationEmptyState } from './NotificationEmptyState'
 
@@ -10,7 +9,10 @@ interface NotificationPanelProps {
   notifications: Notification[]
   isLoading: boolean
   error: Error | null
+  unreadCount: number
   preferences?: NotificationPreferences
+  onMarkAsRead: (id: string) => void
+  onMarkAllAsRead: () => Promise<void>
 }
 
 /**
@@ -25,9 +27,8 @@ interface NotificationPanelProps {
  * - Respects notification preferences
  */
 export const NotificationPanel = forwardRef<HTMLDivElement, NotificationPanelProps>(
-  ({ isOpen, notifications, isLoading, error, preferences }, ref) => {
+  ({ isOpen, notifications, isLoading, error, unreadCount, preferences, onMarkAsRead, onMarkAllAsRead }, ref) => {
     const [filter, setFilter] = useState<'all' | 'unread'>('all')
-    const { markMultipleAsRead, markAsRead } = useNotifications()
 
     // Filter notifications
     const filteredNotifications =
@@ -35,16 +36,20 @@ export const NotificationPanel = forwardRef<HTMLDivElement, NotificationPanelPro
         ? notifications.filter((n) => !n.read)
         : notifications
 
-    const unreadCount = notifications.filter((n) => !n.read).length
+    // Filter by preferences if enabled
+    const filteredByPreferences = preferences
+      ? filteredNotifications.filter(
+        (notif) => preferences.notifications[notif.type]?.enabled !== false
+      )
+      : filteredNotifications
 
-    // Handle mark all as read
+    // Handle mark all as read with error handling
     const handleMarkAllAsRead = async () => {
-      const unreadIds = notifications
-        .filter((n) => !n.read)
-        .map((n) => n.id)
-
-      if (unreadIds.length > 0) {
-        await markMultipleAsRead(unreadIds)
+      try {
+        await onMarkAllAsRead()
+      } catch (error) {
+        console.error('Failed to mark all as read:', error)
+        // Optionally show a toast notification here
       }
     }
 
@@ -131,12 +136,12 @@ export const NotificationPanel = forwardRef<HTMLDivElement, NotificationPanelPro
               <div className="p-4 text-center text-red-600">
                 <p className="text-sm">Failed to load notifications</p>
               </div>
-            ) : filteredNotifications.length === 0 ? (
+            ) : filteredByPreferences.length === 0 ? (
               <NotificationEmptyState />
             ) : (
               <NotificationList
-                notifications={filteredNotifications}
-                onMarkAsRead={markAsRead}
+                notifications={filteredByPreferences}
+                onMarkAsRead={onMarkAsRead}
               />
             )}
           </div>

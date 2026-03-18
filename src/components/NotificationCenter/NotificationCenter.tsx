@@ -20,12 +20,8 @@ export default function NotificationCenter() {
   const panelRef = useRef<HTMLDivElement>(null)
   const bellRef = useRef<HTMLButtonElement>(null)
 
-  const { data, isLoading, error } = useNotifications()
+  const { notifications, unreadCount, isLoading, error, markAsRead, markMultipleAsRead } = useNotifications()
   const { data: preferences } = useNotificationPreferences()
-
-  // Extract notifications from infinite query
-  const notifications = data?.pages.flatMap((page) => page.items) ?? []
-  const unreadCount = notifications.filter((n) => !n.read).length
 
   // Handle click outside panel
   useEffect(() => {
@@ -60,6 +56,13 @@ export default function NotificationCenter() {
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isPanelOpen])
 
+  // Restore focus when panel closes
+  useEffect(() => {
+    if (!isPanelOpen && bellRef.current) {
+      bellRef.current.focus()
+    }
+  }, [isPanelOpen])
+
   return (
     <>
       <NotificationBell
@@ -75,7 +78,17 @@ export default function NotificationCenter() {
         notifications={notifications}
         isLoading={isLoading}
         error={error}
+        unreadCount={unreadCount}
         preferences={preferences}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={async () => {
+          const unreadIds = notifications
+            .filter((n) => !n.read)
+            .map((n) => n.id)
+          if (unreadIds.length > 0) {
+            await markMultipleAsRead(unreadIds)
+          }
+        }}
       />
     </>
   )
