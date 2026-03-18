@@ -45,15 +45,41 @@ export class ErrorBoundary extends React.Component<
       }
 
       return (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <h2 className="font-bold text-lg mb-2">Something went wrong</h2>
-          <p className="mb-4 text-sm">{this.state.error.message}</p>
-          <button
-            onClick={this.retry}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-          >
-            Try again
-          </button>
+        <div
+          className="flex flex-col items-center justify-center py-12 px-4"
+          role="alert"
+          aria-live="assertive"
+        >
+          <div className="mb-4 text-5xl">❌</div>
+          <h2 className="font-bold text-xl text-slate-100 mb-2">Something went wrong</h2>
+          <p className="text-slate-400 text-center mb-6 max-w-md">{this.state.error.message}</p>
+          <details className="max-w-md mb-6">
+            <summary className="cursor-pointer text-sm text-slate-500 hover:text-slate-400">
+              Error details
+            </summary>
+            <pre className="mt-2 p-3 bg-slate-900 rounded text-xs text-red-400 overflow-auto max-h-32 border border-slate-700">
+              {this.state.error.stack || this.state.error.message}
+            </pre>
+          </details>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button
+              onClick={this.retry}
+              className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 transition-colors"
+              aria-label="Try again"
+            >
+              Try again
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="rounded-lg bg-slate-700 px-4 py-2 font-medium text-white hover:bg-slate-600 transition-colors"
+              aria-label="Reload page"
+            >
+              Reload page
+            </button>
+          </div>
+          <div className="sr-only" role="status">
+            An error occurred. Use the buttons above to try again or reload the page.
+          </div>
         </div>
       )
     }
