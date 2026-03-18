@@ -12,3 +12,8 @@ export { SprintRetrospectivePanel } from './SprintRetrospective'
 export { ErrorBoundary, QueryErrorBoundary, MutationError, LoadingSpinner, EmptyState } from './ErrorBoundary'
 export { ErrorFallback } from './ErrorFallback'
 export { LoadingFallback } from './LoadingFallback'
+
+// Task Dependencies
+export { BlockingStatusBadge } from './BlockingStatusBadge'
+export { TaskDependencyList } from './TaskDependencyList'
+export { AddDependencyModal } from './AddDependencyModal'
