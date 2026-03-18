@@ -1,25 +1,27 @@
 import { http, HttpResponse } from 'msw'
-import type { UserProfile, UpdateProfilePayload, ConflictResponse } from '../../types/user-profile'
+import type { UserProfileResponse } from '../../types/forms/user'
 
 /**
  * Generate default user profile
  */
-function generateDefaultProfile(): UserProfile {
+function generateDefaultProfile(): UserProfileResponse {
   return {
-    id: 'profile-1',
-    userId: 'user-1',
+    id: 'user-1',
     name: 'John Doe',
-    email: 'john@example.com',
-    avatar: undefined,
-    bio: 'Software engineer passionate about clean code',
-    timezone: 'UTC',
-    language: 'en',
-    theme: 'auto',
-    createdAt: '2026-01-01T10:00:00Z',
+    email: 'john.doe@example.com',
+    bio: 'Software developer and team lead',
+    avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
+    role: 'developer',
+    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date().toISOString(),
-    lastModified: new Date().toISOString(),
   }
 }
+
+/**
+ * Track whether to simulate conflict (409) response
+ * For testing error handling
+ */
+let shouldSimulateConflict = false
 
 /**
  * In-memory store for user profile
@@ -27,98 +29,90 @@ function generateDefaultProfile(): UserProfile {
  */
 let profileStore = generateDefaultProfile()
 
-/**
- * Track the "stale" timestamp for conflict simulation
- * When a PATCH comes in with an older lastModified, we return 409
- */
-let serverLastModified = profileStore.lastModified
-
 export const userProfileHandlers = [
   /**
-   * GET /api/settings/profile
+   * GET /api/user/profile
    * Fetch current user's profile
    */
-  http.get('/api/settings/profile', () => {
+  http.get('/api/user/profile', () => {
     return HttpResponse.json({
       data: profileStore,
+      success: true,
     })
   }),
 
   /**
-   * PATCH /api/settings/profile
+   * PATCH /api/user/profile
    * Update user's profile
-   * 
+   *
    * Features:
-   * - Optimistic updates on client
-   * - 5% chance of returning 409 Conflict with stale timestamp
-   * - Server data returned on conflict for reconciliation
-   * - Exponential backoff retry on 5xx errors (not on 409)
-   * 
-   * The handler checks if the incoming lastModified matches server's.
-   * If stale, returns 409 to simulate concurrent updates.
+   * - Merge updates with existing profile
+   * - Simulate 200ms network delay
+   * - Optionally simulate 409 Conflict error for testing
+   * - Return updated profile
    */
-  http.patch('/api/settings/profile', async ({ request }) => {
+  http.patch('/api/user/profile', async ({ request }) => {
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 150))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
-    const payload = (await request.json()) as UpdateProfilePayload & { lastModified?: string }
-
-    // 5% chance of conflict to test error handling
-    if (Math.random() < 0.05) {
-      const response: ConflictResponse = {
-        error: 'CONFLICT',
-        message: 'Settings changed elsewhere, please refresh',
-        code: 'SETTINGS_CONFLICT',
-        serverData: profileStore,
-        lastModified: serverLastModified,
-      }
-      
-      return HttpResponse.json(response, { status: 409 })
+    // Simulate conflict error for testing
+    if (shouldSimulateConflict) {
+      shouldSimulateConflict = false
+      return HttpResponse.json(
+        {
+          success: false,
+          error: 'Conflict: Profile was modified by another user. Please refresh and try again.',
+          code: 'PROFILE_CONFLICT',
+        },
+        { status: 409 }
+      )
     }
 
-    // Check if client's lastModified matches server's (basic conflict detection)
-    // In a real app, this would use row versioning or ETags
-    if (payload.lastModified && payload.lastModified !== serverLastModified) {
-      const response: ConflictResponse = {
-        error: 'CONFLICT',
-        message: 'Settings changed elsewhere, please refresh',
-        code: 'SETTINGS_CONFLICT',
-        serverData: profileStore,
-        lastModified: serverLastModified,
-      }
-      
-      return HttpResponse.json(response, { status: 409 })
-    }
+    const payload = (await request.json()) as Partial<UserProfileResponse>
 
-    // Apply updates
-    const updated: UserProfile = {
+    // Merge updates with existing profile
+    const updated: UserProfileResponse = {
       ...profileStore,
-      ...payload,
-      id: profileStore.id,
-      userId: profileStore.userId,
+      name: payload.name ?? profileStore.name,
+      email: payload.email ?? profileStore.email,
+      bio: payload.bio ?? profileStore.bio,
+      avatarUrl: payload.avatarUrl ?? profileStore.avatarUrl,
+      role: payload.role ?? profileStore.role,
       updatedAt: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
     }
 
-    // Update store and server timestamp
+    // Ensure id doesn't change
+    updated.id = profileStore.id
+
+    // Update store
     profileStore = updated
-    serverLastModified = updated.lastModified
 
     return HttpResponse.json({
       data: updated,
+      success: true,
     })
   }),
 
   /**
-   * POST /api/settings/profile/reset
-   * Reset profile to default
+   * POST /api/user/profile/reset
+   * Reset profile to defaults
    */
-  http.post('/api/settings/profile/reset', () => {
+  http.post('/api/user/profile/reset', () => {
     profileStore = generateDefaultProfile()
-    serverLastModified = profileStore.lastModified
 
     return HttpResponse.json({
       data: profileStore,
+      success: true,
     })
+  }),
+
+  /**
+   * POST /api/test/conflict-next
+   * Helper endpoint for testing - make next profile update fail with 409
+   * This is useful for testing the conflict error state
+   */
+  http.post('/api/test/conflict-next', () => {
+    shouldSimulateConflict = true
+    return HttpResponse.json({ success: true })
   }),
 ]

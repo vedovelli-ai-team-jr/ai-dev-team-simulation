@@ -42,7 +42,6 @@ export type { UseNotificationPreferencesOptions, UseNotificationPreferencesRetur
 export { useUserProfile } from './useUserProfile'
 export type { UseUserProfileOptions, UseUserProfileReturn } from './useUserProfile'
 export { useNotificationHistory, notificationHistoryQueryKeys } from './useNotificationHistory'
-export type {
   UseNotificationHistoryOptions,
   UseNotificationHistoryReturn,
   NotificationHistoryEntry,
@@ -57,7 +56,6 @@ export { useGroupedNotifications } from './useGroupedNotifications'
 export type { UseGroupedNotificationsReturn } from './useGroupedNotifications'
 export { useAgentPerformance } from './useAgentPerformance'
 export type { UseAgentPerformanceOptions, UseAgentPerformanceReturn } from './useAgentPerformance'
-export type {
   Notification,
   NotificationCenter,
   NotificationEventType,
@@ -82,7 +80,6 @@ export { useTaskWithNotifications } from './useTaskWithNotifications'
 export { useAppNotifications } from './useAppNotifications'
 export type { UseAppNotificationsOptions, AppNotification } from './useAppNotifications'
 export { useTaskAssignment } from './useTaskAssignment'
-export type {
   AssignmentResult,
   UnassignmentResult,
   AssignmentError,
@@ -99,13 +96,11 @@ export { useAgentTasks } from './useAgentTasks'
 export type { UseAgentTasksOptions, AgentTasksResponse } from './useAgentTasks'
 export { useReassignTask } from './mutations/useReassignTask'
 export { useAdvancedTaskFilters } from './useAdvancedTaskFilters'
-export type {
   AdvancedTaskFilterState,
   FilteredTasksResponse,
   UseAdvancedTaskFiltersOptions,
 } from './useAdvancedTaskFilters'
 export { useActivityFeed } from './useActivityFeed'
-export type {
   TimeRange,
   EventTypeFilter,
   UseActivityFeedReturn,
@@ -117,7 +112,6 @@ export { useAgentAvailability } from './useAgentAvailability'
 export { useTaskAssignmentWithAvailability } from './useTaskAssignmentWithAvailability'
 export type { UseAgentAvailabilityReturn } from '../types/agent-availability'
 export type { AgentAvailability, DateRange } from '../types/agent-availability'
-export type {
   AgentAvailabilityData,
   AvailabilitySlot,
   DateRange,
@@ -145,7 +139,6 @@ export { useSprintAnalytics } from './useSprintAnalytics'
 export type { UseSprintAnalyticsOptions, UseSprintAnalyticsReturn } from './useSprintAnalytics'
 export { useSprintRetrospective } from './useSprintRetrospective'
 export type { UseSprintRetrospectiveOptions, UseSprintRetrospectiveReturn } from './useSprintRetrospective'
-export { useSprintMetrics } from './useSprintMetrics'
 export type { SprintMetricsCalculated, UseSprintMetricsOptions, UseSprintMetricsReturn, SyncStatus } from './useSprintMetrics'
 export { useSprintComparison } from './useSprintComparison'
 export type { SprintComparisonResult, DeltaMetric } from '../types/sprint-comparison'
@@ -168,7 +161,6 @@ export { useTaskList, taskListQueryKeys } from './useTaskList'
 export type { UseTaskListOptions, UseTaskListReturn } from './useTaskList'
 export type { TaskListFilters, PaginatedTasksResponse } from '../types/task'
 export { useAgentHealthAnalytics } from './useAgentHealthAnalytics'
-export type {
   AgentAnalytics,
   TeamAnalytics,
   AgentAnalyticsResponse,
@@ -191,7 +183,6 @@ export { useSprintReport, useCompletionRateTrend, useVelocityTrend, useAgentPerf
 export type { UseSprintReportResult } from './useSprintReport'
 export { useGlobalSearch, globalSearchQueryKeys } from './useGlobalSearch'
 export type { UseGlobalSearchReturn, UseGlobalSearchOptions } from '../types/search'
-export type {
   GlobalSearchResult,
   GlobalSearchResponse,
   GlobalSearchFilters,
@@ -202,3 +193,6 @@ export type { SprintComparisonResult, UseSprintComparisonOptions, UseSprintCompa
 export { useSettings, useUpdateSettings, useInvalidateSettings } from './queries/useSettings'
 export type { UseSettingsOptions, UseSettingsReturn } from './queries/useSettings'
 export type { SettingsSection } from '../types/settings'
+export type { UseUserProfileReturn, UseUserProfileOptions } from './useUserProfile'
+export { useOnboarding } from './useOnboarding'
+export type { UseOnboardingReturn, UseOnboardingOptions } from './useOnboarding'
