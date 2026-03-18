@@ -47,6 +47,7 @@ import { sprintRetrospectiveHandlers } from './handlers/sprint-retrospective'
 import { realtimeHandlers } from './handlers/realtime'
 import { websocketHandlers } from './handlers/websocket'
 import { errorsHandlers } from './handlers/errors'
+import { agentSchedulingHandlers } from './handlers/agent-scheduling'
 
 interface Team {
   id: string
@@ -2618,4 +2619,5 @@ export const paginatedHandlers = [
   ...realtimeHandlers,
   ...websocketHandlers,
   ...errorsHandlers,
+  ...agentSchedulingHandlers,
 ]
