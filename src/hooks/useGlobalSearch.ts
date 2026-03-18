@@ -257,5 +257,3 @@ export function useGlobalSearch(options: UseGlobalSearchOptions = {}): UseGlobal
     reset,
   }
 }
-
-export type UseGlobalSearchReturn_Type = UseGlobalSearchReturn
