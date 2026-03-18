@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Suspense, useState, useCallback } from 'react'
+import { Suspense, useState, useCallback, useMemo } from 'react'
 import { useSprintDetail } from '../../hooks/useSprintDetail'
 import { useSprintTasks } from '../../hooks/useSprintTasks'
+import { useTaskFilters } from '../../hooks/useTaskFilters'
 import { SprintTaskTable } from '../../components/SprintTaskTable'
+import { TaskFilterSidebar } from '../../components/TaskFilterSidebar'
 import { BulkActionToolbar } from '../../components/BulkActionToolbar'
 import { RouteErrorBoundary } from '../../components/RouteErrorBoundary'
 import type { Sprint } from '../../types/sprint'
@@ -24,6 +26,42 @@ function SprintDetailContent({ id }: { id: string }) {
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set())
   const { data: sprint, isLoading: sprintLoading, error: sprintError } = useSprintDetail(id)
   const { data: tasks = [], isLoading: tasksLoading, error: tasksError } = useSprintTasks(id)
+  const { status, priority, assignee, setFilter, clearAllFilters } = useTaskFilters()
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (status && status.length > 0) count += status.length
+    if (priority && priority.length > 0) count += priority.length
+    if (assignee && assignee.length > 0) count += assignee.length
+    return count
+  }, [status, priority, assignee])
+
+  // Filter tasks based on selected filters
+  const filteredTasks = useMemo(() => {
+    let filtered = [...tasks]
+
+    if (status && status.length > 0) {
+      filtered = filtered.filter((task) => status.includes(task.status))
+    }
+
+    if (priority && priority.length > 0) {
+      filtered = filtered.filter((task) => priority.includes(task.priority))
+    }
+
+    if (assignee && assignee.length > 0) {
+      filtered = filtered.filter((task) => assignee.includes(task.assignee))
+    }
+
+    return filtered
+  }, [tasks, status, priority, assignee])
+
+  const handleFilterChange = useCallback(
+    (filterKey: 'status' | 'priority' | 'assignee', value: any) => {
+      setFilter(filterKey, value)
+    },
+    [setFilter]
+  )
 
   const handleSelectionChange = useCallback((newSelection: Set<string>) => {
     setSelectedTaskIds(newSelection)
@@ -127,21 +165,46 @@ function SprintDetailContent({ id }: { id: string }) {
             View all
           </button>
         </div>
-        <div className="border border-slate-700 rounded-lg overflow-hidden bg-slate-900">
-          <SprintTaskTable
-            tasks={tasks}
-            isLoading={tasksLoading}
-            enableBulkSelect={true}
-            selectedTaskIds={selectedTaskIds}
-            onSelectionChange={handleSelectionChange}
+
+        {/* Filter Sidebar + Task Table Layout */}
+        <div className="flex gap-4">
+          {/* Filter Sidebar */}
+          <TaskFilterSidebar
+            filters={{
+              status,
+              priority,
+              assignee,
+            }}
+            onFilterChange={handleFilterChange}
+            onClearFilters={clearAllFilters}
+            activeFilterCount={activeFilterCount}
           />
-          {selectedTaskIds.size > 0 && (
-            <BulkActionToolbar
-              selectedTaskIds={selectedTaskIds}
-              onComplete={handleBulkComplete}
-              onCancel={handleBulkCancel}
-            />
-          )}
+
+          {/* Task Table */}
+          <div className="flex-1 border border-slate-700 rounded-lg overflow-hidden bg-slate-900">
+            {filteredTasks.length === 0 && !tasksLoading && tasks.length > 0 ? (
+              <div className="text-center py-8 text-slate-400">
+                <p>No tasks match your filters</p>
+              </div>
+            ) : (
+              <>
+                <SprintTaskTable
+                  tasks={filteredTasks}
+                  isLoading={tasksLoading}
+                  enableBulkSelect={true}
+                  selectedTaskIds={selectedTaskIds}
+                  onSelectionChange={handleSelectionChange}
+                />
+                {selectedTaskIds.size > 0 && (
+                  <BulkActionToolbar
+                    selectedTaskIds={selectedTaskIds}
+                    onComplete={handleBulkComplete}
+                    onCancel={handleBulkCancel}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
