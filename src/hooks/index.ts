@@ -111,7 +111,9 @@ export { useTaskDependencies } from './queries/dependencies'
 export type { TaskDependenciesResponse } from './queries/dependencies'
 export { useDependencyMutations, detectCircularDependency } from './mutations/useDependencyMutations'
 export { useAgentAvailability } from './useAgentAvailability'
-export type { UseAgentAvailabilityOptions, UseAgentAvailabilityReturn } from './useAgentAvailability'
+export { useTaskAssignmentWithAvailability } from './useTaskAssignmentWithAvailability'
+export type { UseAgentAvailabilityReturn } from '../types/agent-availability'
+export type { AgentAvailability, DateRange } from '../types/agent-availability'
 export type {
   AgentAvailabilityData,
   AvailabilitySlot,
