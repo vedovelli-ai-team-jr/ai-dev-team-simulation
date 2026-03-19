@@ -54,6 +54,9 @@ import { settingsHandlers } from './handlers/settings'
 import { websocketHandlers } from './handlers/websocket'
 import { errorsHandlers } from './handlers/errors'
 import { agentSchedulingHandlers } from './handlers/agent-scheduling'
+import { userProfileHandlers } from './handlers/user-profile'
+import { onboardingHandlers } from './handlers/onboarding'
+import { notificationPreferencesHandlers } from './handlers/notification-preferences'
 
 interface Team {
   id: string
@@ -2631,5 +2634,6 @@ export const paginatedHandlers = [
   ...websocketHandlers,
   ...errorsHandlers,
   ...agentSchedulingHandlers,
-  ...settingsHandlers,
-]
+  ...userProfileHandlers,
+  ...onboardingHandlers,
+  ...notificationPreferencesHandlers,
